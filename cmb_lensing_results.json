@@ -1,0 +1,99 @@
+{
+  "model": {
+    "a_lock": 0.000205,
+    "blend_width_fraction_W0": 0.67,
+    "residual_factor": 1.0,
+    "canonical_fields": true
+  },
+  "locked": {
+    "label": "locked",
+    "theta100": 1.0410334111233719,
+    "rdrag": 149.96013529790955,
+    "sigma8": 0.7796804772390663,
+    "lmax": 2500,
+    "lens_potential_accuracy": 1,
+    "S8": 0.7978103739115388
+  },
+  "matched_LCDM_control": {
+    "label": "control",
+    "theta100": 1.0423220218508096,
+    "rdrag": 147.50260861643463,
+    "sigma8": 0.7945611260957284,
+    "lmax": 2500,
+    "lens_potential_accuracy": 1,
+    "S8": 0.813037042239082
+  },
+  "lensing": {
+    "weighted_PP_ratio_40_2000": 1.0208859590546682,
+    "unweighted_PP_ratio_40_2000": 1.0180181952013185,
+    "weighted_change_pct": 2.088595905466817,
+    "shape_scatter_pct_40_2000": 0.6451494674581569,
+    "sigma8_squared_expectation": 0.9628944710117698,
+    "S8_squared_expectation": 0.9628944710117696,
+    "bin_table": [
+      {
+        "ell_range": "40\u2013100",
+        "mean_PP_ratio_locked_over_control": 1.0097871710506041,
+        "median_PP_ratio": 1.0095571322813701,
+        "min_PP_ratio": 1.0059490593588205,
+        "max_PP_ratio": 1.014504426955814,
+        "rms_fractional_shape_scatter_pct": 0.2490862722759933,
+        "ratio_slope_across_bin": -0.008542514940721706,
+        "mean_suppression_or_enhancement_pct": 0.9787171050604115
+      },
+      {
+        "ell_range": "100\u2013400",
+        "mean_PP_ratio_locked_over_control": 1.0049337059152896,
+        "median_PP_ratio": 1.0043153672309753,
+        "min_PP_ratio": 1.0020855578684968,
+        "max_PP_ratio": 1.0102062887382541,
+        "rms_fractional_shape_scatter_pct": 0.24703727048701252,
+        "ratio_slope_across_bin": 0.006961298870235276,
+        "mean_suppression_or_enhancement_pct": 0.49337059152896323
+      },
+      {
+        "ell_range": "400\u20131000",
+        "mean_PP_ratio_locked_over_control": 1.0182266982340065,
+        "median_PP_ratio": 1.01897861309896,
+        "min_PP_ratio": 1.0102062887382541,
+        "max_PP_ratio": 1.02293181976837,
+        "rms_fractional_shape_scatter_pct": 0.3656896638943165,
+        "ratio_slope_across_bin": 0.012643752919956555,
+        "mean_suppression_or_enhancement_pct": 1.8226698234006466
+      },
+      {
+        "ell_range": "1000\u20132000",
+        "mean_PP_ratio_locked_over_control": 1.0223141452591649,
+        "median_PP_ratio": 1.0224763201745997,
+        "min_PP_ratio": 1.0208809509156944,
+        "max_PP_ratio": 1.0231903793537855,
+        "rms_fractional_shape_scatter_pct": 0.07300357739142833,
+        "ratio_slope_across_bin": -0.0025128342464326085,
+        "mean_suppression_or_enhancement_pct": 2.2314145259164864
+      }
+    ],
+    "cross_spectra": [
+      {
+        "channel": "PT",
+        "ell_range": "40\u20132000, excluding near-zero crossings",
+        "median_ratio": 1.0115944104628012,
+        "mean_ratio": 1.0227939363597804,
+        "rms_fractional_scatter_pct": 7.985675212417455
+      },
+      {
+        "channel": "PE",
+        "ell_range": "40\u20132000, excluding near-zero crossings",
+        "median_ratio": 1.024736169967758,
+        "mean_ratio": 1.0239615216788867,
+        "rms_fractional_scatter_pct": 7.144711257889269
+      }
+    ]
+  },
+  "field_maxima": {
+    "max_abs_deltaC": 0.0351440705061616,
+    "max_abs_vC": 0.0373687423008492,
+    "max_abs_deltaphi": 0.0486028748549512,
+    "max_abs_vphi": 0.0661667325208214
+  },
+  "interpretation": "The locked lensing potential is mildly enhanced relative to the matched LambdaCDM control, despite its lower S8. The enhancement is about one to two percent and is scale dependent, so it is not a simple sigma8-driven suppression."
+}
