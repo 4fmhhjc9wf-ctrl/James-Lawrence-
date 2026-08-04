@@ -1,0 +1,63 @@
+name: CI — lint, test, and Fortran compile
+
+on:
+  push:
+    branches: [ main, fix/repo-health ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.10, 3.11, 3.12]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -e .
+      - name: Install ruff
+        run: |
+          python -m pip install ruff
+      - name: Run ruff (lint)
+        run: |
+          # Use configuration in pyproject.toml
+          ruff check .
+      - name: Run tests
+        run: |
+          pytest -q
+
+  fortran-compile:
+    name: Fortran: compile sources
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install gfortran
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gfortran
+      - name: Find Fortran sources
+        id: find-fortran
+        run: |
+          set -e
+          files=$(git ls-files | grep -E "\.(f|f90|f95)$" || true)
+          echo "::set-output name=files::$files"
+      - name: Compile Fortran sources
+        if: steps.find-fortran.outputs.files != ''
+        run: |
+          set -e
+          echo "Compiling Fortran source files:"
+          for f in ${{ steps.find-fortran.outputs.files }}; do
+            echo "Compiling $f"
+            gfortran -c "$f" -o "$f.o" || (echo "Compilation failed for $f" && exit 1)
+          done
+      - name: No Fortran sources
+        if: steps.find-fortran.outputs.files == ''
+        run: echo "No Fortran source files found in the repository."
