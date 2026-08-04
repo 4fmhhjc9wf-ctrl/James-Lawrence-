@@ -1,0 +1,30 @@
+{
+  "likelihood": "Planck 2018 conservative lensing bandpowers, CMB-marginalized covariance",
+  "dataset": "smicadx12_Dec5_ftl_mv2_ndclpp_p_teb_consext8_CMBmarged",
+  "bins": 9,
+  "scope": "Direct PP-window Gaussian bandpower likelihood using the official 9x9 covariance. The optional linear CMB-response correction is not applied.",
+  "fixed_model": {
+    "locked_chi2": 10.737891348970932,
+    "locked_dof": 9,
+    "locked_p_value": 0.29410390579113005,
+    "control_chi2": 12.002221896935863,
+    "control_dof": 9,
+    "control_p_value": 0.2131840741477849,
+    "delta_chi2_locked_minus_control": -1.2643305479649314
+  },
+  "profiled_global_lensing_amplitude": {
+    "locked_best_A": 1.043573561624992,
+    "locked_chi2": 8.388349331780086,
+    "locked_dof": 8,
+    "locked_p_value": 0.39648291692272164,
+    "control_best_A": 1.0504582842663526,
+    "control_chi2": 8.893888275200464,
+    "control_dof": 8,
+    "control_p_value": 0.3513264179185062
+  },
+  "locked_reference": {
+    "theta100": 1.0410329,
+    "S8": 0.7978104,
+    "sigma8": 0.7796798
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "status": "COMPLETE",
+  "model_parameters_changed": false,
+  "spectra_convention": "lensed total D_ell in microK^2 for TT, EE, TE",
+  "TE_metric": "Delta TE / sqrt(TT_control * EE_control)",
+  "residual_bands": [
+    {
+      "Band": "Low",
+      "ell_min": 2,
+      "ell_max": 29,
+      "TT_RMS_fractional_residual_pct": 28.203008108047534,
+      "TE_RMS_normalized_residual_pct": 12.031802376234863,
+      "EE_RMS_fractional_residual_pct": 6.926356736488863,
+      "TT_mean_fractional_residual_pct": 27.81475843178935,
+      "TE_mean_normalized_residual_pct": 11.805851794493696,
+      "EE_mean_fractional_residual_pct": -6.705821640592707
+    },
+    {
+      "Band": "Acoustic",
+      "ell_min": 30,
+      "ell_max": 600,
+      "TT_RMS_fractional_residual_pct": 10.41405057890209,
+      "TE_RMS_normalized_residual_pct": 8.155660806324676,
+      "EE_RMS_fractional_residual_pct": 5.930357148239606,
+      "TT_mean_fractional_residual_pct": -1.455779107578034,
+      "TE_mean_normalized_residual_pct": 1.321240210414225,
+      "EE_mean_fractional_residual_pct": 0.06783844443684
+    },
+    {
+      "Band": "Damping",
+      "ell_min": 601,
+      "ell_max": 1500,
+      "TT_RMS_fractional_residual_pct": 2.9786232036520777,
+      "TE_RMS_normalized_residual_pct": 2.374920940819193,
+      "EE_RMS_fractional_residual_pct": 4.233357497917669,
+      "TT_mean_fractional_residual_pct": 0.33419453068391236,
+      "TE_mean_normalized_residual_pct": 0.15597284988403387,
+      "EE_mean_fractional_residual_pct": 2.2733813751342424
+    },
+    {
+      "Band": "High",
+      "ell_min": 1501,
+      "ell_max": 2500,
+      "TT_RMS_fractional_residual_pct": 1.7258813900536119,
+      "TE_RMS_normalized_residual_pct": 1.0747891916495211,
+      "EE_RMS_fractional_residual_pct": 2.2486878290282695,
+      "TT_mean_fractional_residual_pct": -0.1625741390274306,
+      "TE_mean_normalized_residual_pct": -0.08699910005339215,
+      "EE_mean_fractional_residual_pct": -0.9646600144970547
+    }
+  ],
+  "amplitude_fits": [
+    {
+      "spectrum": "TT",
+      "best_fit_locked_over_control_amplitude": 0.9458524468083797,
+      "post_rescaling_RMS_shape_residual_pct": 7.896184423327633,
+      "single_rescaling_description": "not sufficient"
+    },
+    {
+      "spectrum": "EE",
+      "best_fit_locked_over_control_amplitude": 1.023257079907975,
+      "post_rescaling_RMS_shape_residual_pct": 4.370608443504279,
+      "single_rescaling_description": "not sufficient"
+    },
+    {
+      "spectrum": "TE",
+      "best_fit_locked_over_control_amplitude": 0.9801827597105577,
+      "post_rescaling_RMS_shape_residual_pct": 4.104363214998675,
+      "single_rescaling_description": "not sufficient"
+    }
+  ],
+  "derived_parameter_card": [
+    {
+      "Model": "Final locked F1",
+      "100_theta_star": 1.0410334111233719,
+      "r_drag_Mpc": 149.96013529790955,
+      "z_star": 1089.6912536838615,
+      "z_drag": 1058.5106113769639,
+      "D_A_zstar_Mpc_physical": 12.956791833630977,
+      "D_M_zstar_Mpc_comoving": 14131.85952874379,
+      "sigma8": 0.7796804772390663,
+      "Omega_m": 0.314114,
+      "S8": 0.7978103739115388,
+      "H0_km_s_Mpc": 67.4,
+      "Omega_b_h2": 0.022,
+      "Omega_c_h2": 0.12005025992438226,
+      "n_s": 0.965,
+      "A_s": 2e-09,
+      "1e9_A_s": 2.0,
+      "tau": 0.054,
+      "max_abs_deltaC": 0.0351440705061616,
+      "max_abs_deltaphi": 0.0486028748549512,
+      "age_Gyr": 13.97338014755511,
+      "r_star_Mpc": 147.11737930724473,
+      "z_eq": 3395.2357723975792
+    },
+    {
+      "Model": "Matched flat LambdaCDM control",
+      "100_theta_star": 1.0423220218508096,
+      "r_drag_Mpc": 147.50260861643463,
+      "z_star": 1090.3837355920195,
+      "z_drag": 1059.074086282418,
+      "D_A_zstar_Mpc_physical": 12.721160230649293,
+      "D_M_zstar_Mpc_comoving": 13883.667373590662,
+      "sigma8": 0.7945611260957284,
+      "Omega_m": 0.314114,
+      "S8": 0.813037042239082,
+      "H0_km_s_Mpc": 67.4,
+      "Omega_b_h2": 0.022,
+      "Omega_c_h2": 0.12005025992438226,
+      "n_s": 0.965,
+      "A_s": 2e-09,
+      "1e9_A_s": 2.0,
+      "tau": 0.054,
+      "max_abs_deltaC": NaN,
+      "max_abs_deltaphi": NaN,
+      "age_Gyr": 13.801970201243423,
+      "r_star_Mpc": 144.71252247545138,
+      "z_eq": 3395.2357723975792
+    }
+  ],
+  "decision": "Final internal CAMB diagnostics complete. Further quantitative model selection requires external likelihood data."
+}
