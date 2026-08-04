@@ -1,0 +1,31 @@
+# Values explicitly stated as locked in the manuscript
+Omega_m0: 0.314114
+Omega_r0: 9.0e-5
+H0_km_s_Mpc: 67.4
+V_inf: 2.187987
+rho_s: 1.58199e15
+mC2: 1.827221
+lambda: 0.802722
+C_s: 0.95
+C_initial: 0.918318
+PiC_initial: 0.055327
+a_lock: 2.05e-4
+transition_width_ratio: 0.67
+omega_b: 0.022
+omega_c: 0.12005
+A_s: 2.0e-9
+n_s: 0.965
+tau_reio: 0.054
+# Required but not numerically specified in the manuscript
+A0: null
+gamma0: null
+rho_gamma: null
+transfer_power: null
+H_c: null
+a_initial: null
+H_initial: null
+phi_initial: null
+Piphi_initial: null
+rho_m_initial: null
+rho_r_initial: null
+transition_W0_definition: null

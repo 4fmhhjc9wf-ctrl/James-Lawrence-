@@ -1,0 +1,6 @@
+# Demonstration-only values. These are NOT the locked unpublished inputs.
+A0: 1.0
+gamma0: 0.2
+rho_gamma: 1.0e12
+transfer_power: 4.0
+H_c: 1.0e5
