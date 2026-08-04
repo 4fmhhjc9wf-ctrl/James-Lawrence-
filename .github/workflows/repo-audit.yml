@@ -1,0 +1,29 @@
+name: Repo audit
+
+on:
+  push:
+    branches: [ fix/repo-health ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  run-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - name: Make audit script executable
+        run: |
+          chmod +x scripts/repo_audit.sh || true
+      - name: Run repo audit
+        run: |
+          ./scripts/repo_audit.sh
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-audit-output
+          path: repo_audit_output/
