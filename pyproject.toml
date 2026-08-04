@@ -10,8 +10,8 @@ authors = [
 description = "Code for Anisotropies in the Microwave Background"
 keywords = ['cosmology', 'CAMB', 'CMB']
 readme = "docs/README_pypi.rst"
-license = "LicenseRef-LGPLv3-arxiv"
-license-files = ["LICENCE.txt"]
+license = "MIT"
+license-files = ["LICENSE"]
 dynamic = ["version"]
 requires-python = ">=3.10.0"
 classifiers = [
