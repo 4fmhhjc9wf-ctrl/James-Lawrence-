@@ -1,0 +1,196 @@
+
+#Files containing classes to include
+#e.g. change RECOMBINATION_FILES to "recfast cosmorec" to also support cosmorec
+#     or to "recfast hyrec" to support HYREC-2
+POWERSPECTRUM_FILES ?= InitialPower
+REIONIZATION_FILES ?= reionization
+RECOMBINATION_FILES ?= recfast
+NONLINEAR_FILES     ?= halofit SPkNonLinear SecondOrderPK ExternalNonLinearRatio
+DARKENERGY_FILES  ?= DarkEnergyFluid DarkEnergyPPF PowellMinimize DarkEnergyQuintessence
+
+BISPECTRUM ?= SeparableBispectrum
+
+#Driver program
+DRIVER        ?= inidriver
+#DRIVER       ?= tester
+
+SOURCE_DIR ?= $(CURDIR)
+
+# Set CAMB_BUILD_DIR to keep generated build artefacts off the source filesystem.
+# This is useful for bind-mounted worktrees whose host clock differs from the
+# container clock. CAMB and forutils use separate subdirectories under it.
+Release: OUTPUT_DIR = $(if $(CAMB_BUILD_DIR),$(CAMB_BUILD_DIR)/camb/Release,Release)
+Debug: OUTPUT_DIR = $(if $(CAMB_BUILD_DIR),$(CAMB_BUILD_DIR)/camb/Debug,Debug)
+
+Release: DLL_DIR = $(if $(CAMB_BUILD_DIR),$(CAMB_BUILD_DIR)/camb/Releaselib,Releaselib)
+Debug: DLL_DIR = $(if $(CAMB_BUILD_DIR),$(CAMB_BUILD_DIR)/camb/Debuglib,Debuglib)
+
+OUTPUT_DIR ?= $(if $(CAMB_BUILD_DIR),$(CAMB_BUILD_DIR)/camb/Release,Release)
+PYCAMB_OUTPUT_DIR ?= ../camb
+DLL_DIR ?= $(if $(CAMB_BUILD_DIR),$(CAMB_BUILD_DIR)/camb/Releaselib,Releaselib)
+
+
+CAMBLIB       = libcamb.a
+
+SOURCEFILES      = constants config classes MathUtils RungeKuttaDP45 DarkAge21cm \
+	DarkEnergyInterface SourceWindows massive_neutrinos model results bessels \
+	hyperspherical_bessels hyperspherical_bessels_airy hyperspherical_bessels_smallnu hyperspherical_bessels_olver \
+        $(RECOMBINATION_FILES) $(DARKENERGY_FILES) equations \
+        $(REIONIZATION_FILES) $(POWERSPECTRUM_FILES) $(NONLINEAR_FILES) \
+        lensing $(BISPECTRUM) cmbmain camb camb_python
+CAMB_DEPFILES = $(addsuffix .d,$(SOURCEFILES))
+CAMB_DRIVER_DEPFILES = $(CAMB_DEPFILES) $(DRIVER).d
+OUTPUT_LIBRARY_DEPFILES = $(addprefix $(OUTPUT_DIR)/,$(CAMB_DEPFILES))
+OUTPUT_DRIVER_DEPFILES = $(addprefix $(OUTPUT_DIR)/,$(CAMB_DRIVER_DEPFILES))
+DLL_LIBRARY_DEPFILES = $(addprefix $(DLL_DIR)/,$(CAMB_DEPFILES))
+
+define run_build_submake
+	+@if test -n "$(strip $(filter-out $(wildcard $(1)),$(1)))"; then \
+		echo "Bootstrapping $(2) with -j1 until dependency files are generated."; \
+		$(MAKE) -j1 -C $(2) $(MAKEOPT) -r -f $(SOURCE_DIR)/Makefile_main SOURCE_DIR=$(SOURCE_DIR) $(3); \
+	else \
+		$(MAKE) -C $(2) $(MAKEOPT) -r -f $(SOURCE_DIR)/Makefile_main SOURCE_DIR=$(SOURCE_DIR) $(3); \
+	fi
+endef
+
+
+F90WFLAGS     = -Waliasing -Wampersand -Wconversion -Wc-binding-type -Wintrinsics-std \
+        -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wtarget-lifetime -Wreal-q-constant
+# -Wsurprising -Wunused
+
+F90FLAGS      = $(FFLAGS)
+#F90FLAGS      += $(F90WFLAGS)
+
+SF90FLAGS      = $(SFFLAGS) $(FFLAGS)
+
+
+CAMBOBJ       = $(patsubst %,%.o,$(SOURCEFILES))
+
+FORUTILS_DIR ?= $(if $(CAMB_BUILD_DIR),$(CAMB_BUILD_DIR)/forutils/$(notdir $(OUTPUT_DIR))/,$(FORUTILSPATH)/$(OUTPUT_DIR)/)
+python: FORUTILS_DIR=$(if $(CAMB_BUILD_DIR),$(CAMB_BUILD_DIR)/forutils/$(notdir $(DLL_DIR))/,$(FORUTILSPATH)/$(DLL_DIR)/)
+
+LIBLINK = -L"$(FORUTILS_DIR)" -lforutils
+
+ifneq ($(FISHER),)
+LIBLINK += $(FISHER_LINK)
+endif
+
+
+## CosmoRec
+ifneq (,$(findstring cosmorec,$(RECOMBINATION_FILES)))
+camb: libCosmoRec.a
+python: libCosmoRec.a
+FFLAGS += -DCOSMOREC
+COSMOREC_PATH ?=../../CosmoRec/
+GSL_LINK ?=-lgsl -lgslcblas
+LIBLINK += -L$(COSMOREC_PATH) -lCosmoRec $(GSL_LINK) -lstdc++
+endif
+
+
+ifneq (,$(findstring hyrec,$(RECOMBINATION_FILES)))
+FFLAGS += -DHYREC
+HYREC_PATH ?= ../../HYREC-2/
+LIBLINK += -L$(HYREC_PATH) -lhyrec
+camb: libhyrec.a
+python: libhyrec.a
+endif
+
+default: camb
+
+all: camb python libcamb
+Release: camb python
+Debug: camb python
+
+MAKEOPT ?= --no-print-directory
+
+cur_ver := $(shell cat compiler.ver 2>&1 || echo "")
+ifneq ($(cur_ver),$(compiler_ver))
+$(shell rm -f compiler.ver *.d)
+endif
+
+compiler.ver:
+	@echo $(compiler_ver) > compiler.ver
+	@rm -f *.d
+
+camb: libforutils directories
+	$(call run_build_submake,$(OUTPUT_DRIVER_DEPFILES),$(OUTPUT_DIR),$(CAMBLIB) $(SOURCE_DIR)/camb)
+
+libcamb: libforutils directories
+	$(call run_build_submake,$(OUTPUT_LIBRARY_DEPFILES),$(OUTPUT_DIR),$(CAMBLIB))
+
+python: libforutils_so directories_so
+	$(call run_build_submake,$(DLL_LIBRARY_DEPFILES),$(DLL_DIR),camblib.so F90FLAGS="$(SF90FLAGS)" OUTPUT_DIR=$(DLL_DIR))
+	@mkdir -p $(PYCAMB_OUTPUT_DIR)
+	cp $(DLL_DIR)/camblib.so $(PYCAMB_OUTPUT_DIR)
+
+$(SOURCE_DIR)/camb: $(CAMBLIB) $(DRIVER).o | silent
+	+@$(MAKE) -C $(SOURCE_DIR) $(MAKEOPT) -f Makefile_main camb_exe
+
+camb_exe:
+	$(F90C) $(F90FLAGS) $(MODOUT) $(IFLAG)$(OUTPUT_DIR)/ $(IFLAG)"$(FORUTILS_DIR)" \
+		$(OUTPUT_DIR)/$(DRIVER).o $(OUTPUT_DIR)/$(CAMBLIB) $(F90CRLINK) $(LIBLINK) -o camb
+
+camblib.so: $(CAMBOBJ)
+	+@$(MAKE) -C $(SOURCE_DIR) $(MAKEOPT) -f Makefile_main $(DLL_DIR)/camblib.so
+
+libcambobj:
+    LIBCAMBOBJ = $(patsubst %,$(DLL_DIR)/%.o,$(SOURCEFILES))
+
+#cannot link the .a library, or the linker will strip out some things we might need
+$(DLL_DIR)/camblib.so: libcambobj
+	$(F90C) $(SF90FLAGS) $(SMODOUT) $(IFLAG)$(DLL_DIR)/ $(IFLAG)"$(FORUTILS_DIR)"  \
+		$(LIBCAMBOBJ) $(F90CRLINK) $(LIBLINK) -o $(DLL_DIR)/camblib.so
+
+
+$(CAMBLIB): $(CAMBOBJ)
+	$(AR) -r $@ $(CAMBOBJ)
+
+#../Makefile ../Makefile_main
+%.o: $(SOURCE_DIR)/%.f90 compiler.ver
+	$(F90C) $(F90FLAGS) $(IFLAG)"$(FORUTILS_DIR)" -c $< -o $*.o
+
+directories:
+	@mkdir -p $(OUTPUT_DIR)
+
+directories_so:
+	@mkdir -p $(DLL_DIR)
+
+libforutils_so:
+	+@$(MAKE) -C "$(FORUTILSPATH)" $(MAKEOPT) $(notdir $(DLL_DIR))
+
+libforutils:
+	+@$(MAKE) -C "$(FORUTILSPATH)" $(MAKEOPT) $(notdir $(OUTPUT_DIR))
+
+
+ifneq ($(CAMB_BUILD_DIR),)
+CAMB_BUILD_OUTPUT_DIRS = $(addprefix $(CAMB_BUILD_DIR)/camb/,Release Debug Releaselib Debuglib)
+clean:
+	-rm -f -- $(foreach dir,$(CAMB_BUILD_OUTPUT_DIRS),"$(dir)"/*.o "$(dir)"/*.a "$(dir)"/*.so "$(dir)"/*.d "$(dir)"/*.mod "$(dir)"/*.optrpt "$(dir)"/compiler.ver "$(dir)"/core)
+else
+clean:
+	-rm -f *.o *.a *.d core *.mod *.optrpt
+	-rm -rf Release* Debug* WinDLL*
+endif
+
+delete:
+	rm -f camb
+	rm -f ../camb/*.so
+
+## CosmoRec make parts
+cleanCR:
+	+@$(MAKE) -C $(COSMOREC_PATH) $(MAKEOPT) tidy
+
+libCosmoRec.a:
+	+@$(MAKE) -C $(COSMOREC_PATH) $(MAKEOPT) lib
+
+libhyrec.a:
+	+@$(MAKE) -C $(HYREC_PATH) $(MAKEOPT) libhyrec.a
+
+silent:
+	@:
+
+export
+-include *.d
+
+.PHONY: clean directories libcamb Release Releaselib Debuglib Debug \
+        camb python camb_exe libcambobj libcamb
