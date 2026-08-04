@@ -1,0 +1,73 @@
+# .gitignore for James-Lawrence- repository
+# Ignore Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+env/
+.venv/
+venv/
+build/
+dist/
+.eggs/
+*.egg-info/
+pip-wheel-metadata/
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# Byte-compiled / cache
+*.so
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*~
+
+# Fortran build artifacts
+*.o
+*.mod
+*.smod
+*.lst
+*.sym
+*.a
+*.so
+
+# Makefile / build directories
+Fortran_build/
+fortran_build/
+
+# Common data and binary files (large) - do not remove existing files, this prevents tracking new ones
+*.zip
+*.tar.gz
+*.tgz
+*.dat
+*.csv
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.pdf
+*.bin
+
+# Documentation build
+_build/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary and backup files
+*.tmp
+*.bak
+
+# Tests output
+pytest_cache/
+
+# Logs
+*.log
+
+# Ignore repository-specific large generated files (add more patterns as needed)
+
+# Note: This .gitignore only prevents new matching files from being tracked. Existing tracked large files remain in the repository.
