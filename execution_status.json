@@ -1,0 +1,25 @@
+{
+  "task": "Official Planck 2018 lensing likelihood",
+  "model": "Final F1 locked saturation CAMB branch",
+  "model_parameters_changed": false,
+  "execution_status": "blocked_missing_external_likelihood",
+  "checks": {
+    "camb_installed": true,
+    "camb_version": "2.0.1",
+    "cobaya_installed": false,
+    "getdist_installed": false,
+    "planck_2018_lensing_native_data_found": false,
+    "planck_2018_lensing_CMBMarged_data_found": false,
+    "uploaded_package_contains_likelihood_data": false,
+    "uploaded_package_contains_executable_code": false
+  },
+  "required_to_complete": [
+    "Cobaya installation",
+    "Cobaya Planck 2018 likelihood data package containing planck_2018_lensing.native or planck_2018_lensing.CMBMarged"
+  ],
+  "fallback_result_available": {
+    "type": "compressed Planck 2018 lensing diagnostic",
+    "locked_Aphi_relative_to_control": 1.0059315366678636,
+    "delta_chi2_locked_minus_control": -0.1215697441974333
+  }
+}
