@@ -1,0 +1,80 @@
+name: Node 20 auto-fixer
+
+# Runs on pushes to the fix/update-node-version branch. Scans the repo for exact
+# occurrences of `node-version: 20` and `actions/setup-node`, replaces them with
+# supported values (Node 22 and actions/setup-node@v4), commits the edits back to
+# the branch, and uploads a before/after report as an artifact.
+
+on:
+  push:
+    branches: [ fix/update-node-version ]
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create scan output dir
+        run: |
+          mkdir -p repo-scan-output
+
+      - name: Scan (before)
+        run: |
+          echo "=== node-version: 20 matches (before) ===" > repo-scan-output/node_version_report.txt || true
+          git grep -n -- "node-version: 20" || true >> repo-scan-output/node_version_report.txt || true
+          echo "\n=== actions/setup-node matches (before) ===" >> repo-scan-output/node_version_report.txt || true
+          git grep -n -- "actions/setup-node" || true >> repo-scan-output/node_version_report.txt || true
+
+      - name: Apply fixes
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Replace exact workflow pins: node-version: 20 -> node-version: '22'
+          # Limit replacement to .github/workflows files to be conservative.
+          if git ls-files .github/workflows | grep -q .; then
+            for f in $(git ls-files .github/workflows); do
+              sed -E -i "s/node-version:[[:space:]]*20/node-version: '22'/g" "$f" || true
+            done
+          fi
+
+          # Replace Dockerfiles with FROM node:20 -> FROM node:22
+          if git grep -n -- "FROM node:20" || true; then
+            git grep -l -- "FROM node:20" || true | xargs -r sed -i -E "s/FROM node:20/FROM node:22/g"
+          fi
+
+          # Pin actions/setup-node to v4 (replace unpinned or other majors)
+          # This naively replaces any uses: actions/setup-node@* with @v4
+          git grep -n -- "actions/setup-node" || true | cut -d: -f1 | sort -u | while read -r file; do
+            sed -E -i "s@uses:[[:space:]]*actions/setup-node@uses: actions/setup-node@v4@g" "$file" || true
+          done
+
+          # Commit changes if any
+          if ! git diff --quiet; then
+            git add -A
+            git commit -m "ci: upgrade Node 20 -> 22 and pin actions/setup-node@v4" || true
+            git push
+            echo "Committed and pushed fixes."
+          else
+            echo "No fixes required."
+          fi
+
+      - name: Scan (after)
+        run: |
+          echo "\n=== node-version: 20 matches (after) ===" >> repo-scan-output/node_version_report.txt || true
+          git grep -n -- "node-version: 20" || true >> repo-scan-output/node_version_report.txt || true
+          echo "\n=== actions/setup-node matches (after) ===" >> repo-scan-output/node_version_report.txt || true
+          git grep -n -- "actions/setup-node" || true >> repo-scan-output/node_version_report.txt || true
+
+      - name: Upload fix report
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-version-fix-report
+          path: repo-scan-output/node_version_report.txt
