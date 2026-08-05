@@ -1,35 +1,55 @@
-# Executable reference code
+# Recovered Project: Locked Saturation Cosmology — Reviewer Landing Page
 
-This repository contains the reference implementation and supporting data for "Locked Saturation Cosmology".
+**Prominent document (start here):**
 
-Quickstart (developer-friendly)
+- **[Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf](./Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf)**
 
-1. Create and activate a virtualenv (recommended):
 
-   python -m venv .venv
-   source .venv/bin/activate   # macOS / Linux
-   .\.venv\Scripts\activate  # Windows (PowerShell)
+Summary
 
-2. Install the package and test dependencies:
+This repository contains a recovered computational phenomenological prototype used to generate the outputs associated with the Locked Saturation Cosmology study. The materials here include the manuscript, recovered archive, scientific outputs, checksums, and project-specific source used to produce the results.
 
-   pip install -e .
-   pip install -r requirements.txt
+Important status
 
-3. Run the test suite:
+- This is a recovered prototype. Independent external reproduction of the computational results is pending and remains the responsibility of external reviewers.
+- Do not assume the repository is a finalized archival release. The repository is prepared for independent review and reproduction attempts.
 
-   pytest -q
+Reviewer quick links
 
-4. Run the reference reproduction script (small example):
+- Manuscript (primary): [Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf](./Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf)
+- Executive Summary: [Executive_Summary.pdf](./Executive_Summary.pdf)
+- Independent Reviewer Guide: [Independent_Reviewer_Guide.pdf](./Independent_Reviewer_Guide.pdf)
+- Reproduction instructions: [REPRODUCTION.md](./REPRODUCTION.md)
+- Reproducibility status: [REPRODUCIBILITY_STATUS.md](./REPRODUCIBILITY_STATUS.md)
+- Final theta results: [FINAL_THETA_RESULT.md](./FINAL_THETA_RESULT.md)
+- CAMB diagnostics: [FINAL_CAMB_DIAGNOSTICS.md](./FINAL_CAMB_DIAGNOSTICS.md)
+- Planck lensing report: [PLANCK_2018_LENSING_BANDPOWER_REPORT.md](./PLANCK_2018_LENSING_BANDPOWER_REPORT.md)
 
-   python run_reference_reproduction.py
+Files and preservation
 
-Helpful docs and notes
+- The manuscript, recovered archive, scientific outputs, and checksums are preserved in this repository and must not be altered or deleted as part of this reviewer-facing update.
+- The project-specific source code used to produce the outputs is preserved. Do not reorganize or delete additional files until the new README is live and links have been checked.
 
-- Reproducibility & running instructions: REPRODUCTION.md and REPRODUCIBILITY_STATUS.md
-- Large data files and PDFs are present in this repository for reproducibility; they are not removed by this change. New large files are ignored via .gitignore.
-- Fortran sources (.f90) and Python bindings live at the repository root. There are several legacy README and documentation files — see docs/ARCHIVE.md (added in the PR) for where legacy content will be kept.
+What I changed in this branch
 
-If you need me to:
-- Add CI to compile Fortran sources, say so (Fortran compilation in CI can be slow and may need tuning).
-- Remove or move large binary files to Git LFS or releases (this rewrites history and requires explicit approval).
+- Replaced the short README with this reviewer-facing landing page on the branch `review-readme` so reviewers can preview the rendered documentation before any change is merged into `main`.
+- No manuscript, archive, outputs, checksums, or source files were modified.
 
+Reviewer instructions (simple)
+
+1. Open this branch on GitHub and review the rendered README to confirm the links resolve correctly.
+   - PR link to create: https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/pull/new/review-readme
+2. Do not edit or move the linked manuscript, archive, or output files in your review branch.
+3. If links are correct and you are satisfied, create the pull request and request review/merge into `main`.
+
+Explicit statement to display to reviewers
+
+> This repository contains a recovered computational phenomenological prototype. Independent external reproduction of the computational results remains pending. Reviewers are requested to attempt reproduction and report findings; do not modify or remove manuscript or output files in this repository.
+
+Contact / next steps
+
+- After you open the PR, paste the PR URL here and I will review the rendered README and verify the links for you.
+
+---
+
+(Do not alter manuscript, recovered archive, scientific outputs, checksums, or project-specific source in this branch.)
