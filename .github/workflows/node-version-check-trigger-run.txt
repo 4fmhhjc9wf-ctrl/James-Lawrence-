@@ -1,0 +1,3 @@
+Automated trigger commit to run the Node runtime check workflow (user requested).
+
+This file exists only to create a new commit on the fix/repo-health branch to trigger the node-version-check workflow. You can safely remove it after the workflow run completes.

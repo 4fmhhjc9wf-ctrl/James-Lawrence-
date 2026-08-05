@@ -1,0 +1,39 @@
+name: Node runtime check
+
+on:
+  push:
+    branches: [ main, fix/repo-health ]
+  workflow_dispatch: {}
+
+jobs:
+  check-node-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Scan repository for Node 20 usages
+        run: |
+          mkdir -p repo_audit_output
+          echo "Scanning for exact 'node-version: 20' occurrences..." > repo_audit_output/node_version_report.txt
+          git grep -n --line-number "node-version: 20" || true >> repo_audit_output/node_version_report.txt
+          echo "\nScanning for actions/setup-node usages and any node-version lines..." >> repo_audit_output/node_version_report.txt
+          git grep -n --line-number "actions/setup-node" || true >> repo_audit_output/node_version_report.txt
+          git grep -n --line-number "node-version:" || true >> repo_audit_output/node_version_report.txt
+          echo "Report written to repo_audit_output/node_version_report.txt"
+
+      - name: Upload scan report
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-version-report
+          path: repo_audit_output/node_version_report.txt
+
+      - name: Fail if deprecated Node version found
+        run: |
+          if git grep -q "node-version: 20"; then
+            echo "Deprecated Node 20 usage found — please update workflows/actions to a supported Node LTS (e.g. 18 or 22)."
+            git grep -n "node-version: 20"
+            exit 1
+          else
+            echo "No exact 'node-version: 20' occurrences found."
+          fi
