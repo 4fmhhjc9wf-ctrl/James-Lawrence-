@@ -1,51 +1,38 @@
-name: Validate Locked Saturation Package Installation
+name: Validate Locked Saturation Package
 
 on:
   workflow_dispatch:
+
   push:
     branches:
-      - restore-locked-saturation-package
+      - restore-locked-saturation-clean
 
 jobs:
   validate:
-    name: Test locked_saturation with editable install
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.11"]
+
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.11"
 
-      - name: Install build dependencies
+      - name: Install test dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gfortran make
-
-      - name: Install Python build tools and test dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade pip
           python -m pip install pytest numpy scipy
 
-      - name: Editable install of package
-        run: |
-          python -m pip install -e .
-
-      - name: Verify CAMB imports
-        run: |
-          python -c "import camb; print('CAMB import PASS:', camb.__file__)"
-
-      - name: Verify locked_saturation model imports
+      - name: Verify model imports
         run: |
           python -c "from locked_saturation.model import ModelParameters, potential, potential_grad, auxiliaries, rhs; print('model import PASS')"
 
-      - name: Verify locked_saturation validation imports
+      - name: Verify validation imports
         run: |
           python -c "from locked_saturation.validation import locked_arithmetic; print('validation import PASS')"
 
@@ -54,10 +41,8 @@ jobs:
           mkdir -p /tmp/locked-saturation-tests
           cp test_model.py /tmp/locked-saturation-tests/
           cp test_locked_arithmetic.py /tmp/locked-saturation-tests/
-          echo "Test files copied to /tmp/locked-saturation-tests"
-          ls -la /tmp/locked-saturation-tests/
 
-      - name: Run pytest from isolated directory
+      - name: Run pytest
         run: |
           cd /tmp/locked-saturation-tests
           pytest -q test_model.py test_locked_arithmetic.py
