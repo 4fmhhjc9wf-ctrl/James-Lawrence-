@@ -49,7 +49,7 @@ def get_forutils():
             print("Failed to install using git")
 
     if not fpath:
-        dirs = ["..", ".." + os.sep + ".."]
+        dirs = [".." , ".." + os.sep + ".."]
         for _dir in dirs:
             path = os.path.join(_dir, "forutils")
             if os.path.isdir(path):
@@ -153,10 +153,6 @@ def make_library(cluster=False):
             FFLAGS = "-cpp -fopenmp -O3"
             link_flags = "-shared -fuse-ld=lld"
             module_dir_flag = "-module-dir"
-            # -fopenmp's own implicit "-defaultlib:libomp.lib" does not reliably resolve every
-            # symbol with lld-link (e.g. __kmpc_fork_call_if, used by "!$OMP ... IF(...)" clauses,
-            # is left undefined even though it is present in libomp.lib) - passing the import
-            # library explicitly on the link line avoids relying on that fallback path.
             flang_exe = shutil.which(compiler, path=_compile.compiler_environ.get("PATH"))
             flang_bin_dir = os.path.dirname(flang_exe) if flang_exe else None
             libomp_dll = os.path.join(flang_bin_dir, "libomp.dll") if flang_bin_dir else None
@@ -172,8 +168,6 @@ def make_library(cluster=False):
             FFLAGS = "-shared -static -cpp -fopenmp -O3 -fmax-errors=4"
             link_flags = ""
             module_dir_flag = "-J"
-        # FFLAGS = "-shared -static -cpp -fopenmp -g -fbacktrace -ffpe-trap=invalid,overflow,zero " \
-        #         "-fbounds-check -fmax-errors=4"
 
         fpath = get_forutils()
         makefile = _compile.makefile_dict("Makefile_main")
@@ -199,14 +193,6 @@ def make_library(cluster=False):
                 f.write(compiler_version)
 
         if is_flang:
-            # The conda-forge Windows flang package (unlike e.g. apt.llvm.org's Linux build) ships
-            # libomp's C header but no Fortran omp_lib.mod, so "use omp_lib" fails to resolve. Only
-            # omp_get_thread_num/omp_get_max_threads/omp_set_num_threads/omp_get_wtime are used
-            # (via "use omp_lib, only: ...") anywhere in the codebase, so provide a minimal standin
-            # module built fresh each time against whichever flang is active, binding directly to
-            # libomp's C-interoperable exports (confirmed via llvm-objdump -p libomp.dll: plain,
-            # unmangled "omp_get_thread_num" etc.) rather than depending on any particular Fortran
-            # module packaging.
             omp_lib_mod = os.path.join(tmpdir, "omp_lib.mod")
             if not os.path.exists(omp_lib_mod):
                 shim_source = os.path.join(tmpdir, "win_flang_omp_lib_shim.f90")
@@ -251,7 +237,6 @@ def make_library(cluster=False):
         if not need_compile:
             dll_time = os.path.getmtime(lib_file)
         for source in FORUTILS + SOURCES:
-            # manual Make using dependency files if available
             outroot = os.path.join(tmpdir, os.path.split(source)[1])
             fout = outroot + ".o"
             ofiles += [fout]
@@ -287,7 +272,6 @@ def make_library(cluster=False):
 
         if need_compile or not os.path.exists(lib_file):
             if os.path.exists(lib_file):
-                # raise an exception if the file in use and cannot be deleted
                 try:
                     os.remove(lib_file)
                 except OSError:
@@ -322,10 +306,6 @@ def make_library(cluster=False):
             if subprocess.call(cmd, shell=True, env=_compile.compiler_environ) != 0:
                 raise OSError("Compilation failed")
             if is_flang:
-                # -fopenmp on Windows flang links dynamically against LLVM's libomp.dll (no static
-                # option is available, unlike gfortran's -static libgomp); copy it alongside
-                # cambdll.dll so the OpenMP runtime is found without needing PATH changes, since
-                # Windows searches a loaded DLL's own directory when resolving its dependencies.
                 if libomp_dll and os.path.exists(libomp_dll):
                     shutil.copy(libomp_dll, os.path.join(pycamb_path, "camb", "libomp.dll"))
                 else:
@@ -457,12 +437,15 @@ if __name__ == "__main__":
             "build_ext": BuildExtCommand,
         },
         ext_modules=[Extension("camb.camblib", [])],
-        packages=["camb", "camb.tests"],
+        packages=["camb", "camb.tests", "locked_saturation"],
+        package_dir={
+            "locked_saturation": "src/locked_saturation",
+        },
         platforms="any",
         package_data={
             "camb": [
                 DLLNAME,
-                "libomp.dll",  # only present for Windows builds with COMPILER=flang; harmless if absent
+                "libomp.dll",
                 "HighLExtrapTemplate_lenspotentialCls.dat",
                 "PArthENoPE_880.2_marcucci.dat",
                 "PArthENoPE_880.2_standard.dat",
