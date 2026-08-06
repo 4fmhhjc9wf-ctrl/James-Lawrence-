@@ -1,4 +1,5 @@
-# Recovered Project: Locked Saturation Cosmology — Reviewer Landing Page
+# Locked Saturation Cosmology
+## Computational Implementation, Manuscript, and Independent Review Materials
 
 **Prominent document (start here):**
 
@@ -6,9 +7,9 @@
 
 ## Summary
 
-This repository contains the implementation and supporting manuscript for **Locked Saturation Cosmology**, a proposed gravitational theory that has been implemented as a working computational model and evaluated against the datasets included in this repository.
+This repository contains the implementation and supporting manuscript for **Locked Saturation Cosmology**, a proposed gravitational theory that has been implemented as a working computational model.
 
-The repository includes the manuscript, source code, recovered implementation, numerical outputs, validation material, and documentation required for independent scientific evaluation and computational reproduction.
+The repository includes the manuscript, source code, recovered implementation, numerical outputs, validation material, and documentation required for independent scientific evaluation and computation.
 
 ## Current scientific status
 
@@ -48,7 +49,7 @@ Reviewer instructions (simple)
 
 Explicit statement to display to reviewers
 
-> This repository contains a recovered implementation. Independent external reproduction of the computational results remains pending. Reviewers are requested to attempt reproduction and report findings; do not modify or remove manuscript or output files in this repository.
+> This repository contains a recovered implementation. Independent external reproduction of the computational results remains pending. Reviewers are requested to attempt reproduction and report findings.
 
 Contact / next steps
 
