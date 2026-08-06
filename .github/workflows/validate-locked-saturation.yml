@@ -40,8 +40,17 @@ jobs:
         run: |
           python -c "from locked_saturation.validation import locked_arithmetic; print('validation import PASS')"
 
-      - name: Run pytest on maintained tests
-        env:
-          PYTHONPATH: src
+      - name: Prepare isolated test directory
         run: |
+          mkdir -p /tmp/locked-saturation-tests
+          cp test_model.py /tmp/locked-saturation-tests/
+          cp test_locked_arithmetic.py /tmp/locked-saturation-tests/
+          echo "Test files copied to /tmp/locked-saturation-tests"
+          ls -la /tmp/locked-saturation-tests/
+
+      - name: Run pytest from isolated directory
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: |
+          cd /tmp/locked-saturation-tests
           pytest -q test_model.py test_locked_arithmetic.py
