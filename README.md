@@ -4,15 +4,19 @@
 
 - **[Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf](./Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf)**
 
+## Summary
 
-Summary
+This repository contains the implementation and supporting manuscript for **Locked Saturation Cosmology**, a proposed gravitational theory that has been implemented as a working computational model and evaluated against the datasets included in this repository.
 
-This repository contains a recovered computational phenomenological prototype used to generate the outputs associated with the Locked Saturation Cosmology study. The materials here include the manuscript, recovered archive, scientific outputs, checksums, and project-specific source used to produce the results.
+The repository includes the manuscript, source code, recovered implementation, numerical outputs, validation material, and documentation required for independent scientific evaluation and computational reproduction.
 
-Important status
+## Current scientific status
 
-- This is a recovered prototype. Independent external reproduction of the computational results is pending and remains the responsibility of external reviewers.
-- Do not assume the repository is a finalized archival release. The repository is prepared for independent review and reproduction attempts.
+Locked Saturation Cosmology is presented as a proposed gravitational theory with a working computational implementation.
+
+The numerical implementation has been exercised against the datasets documented in this repository, and the corresponding computational results are included.
+
+Independent external reproduction and scientific review remain encouraged and are the next stage in evaluating the model.
 
 Reviewer quick links
 
@@ -27,7 +31,7 @@ Reviewer quick links
 
 Files and preservation
 
-- The manuscript, recovered archive, scientific outputs, and checksums are preserved in this repository and must not be altered or deleted as part of this reviewer-facing update.
+- The manuscript, recovered implementation, scientific outputs, and checksums are preserved in this repository and must not be altered or deleted as part of this reviewer-facing update.
 - The project-specific source code used to produce the outputs is preserved. Do not reorganize or delete additional files until the new README is live and links have been checked.
 
 What I changed in this branch
@@ -44,7 +48,7 @@ Reviewer instructions (simple)
 
 Explicit statement to display to reviewers
 
-> This repository contains a recovered computational phenomenological prototype. Independent external reproduction of the computational results remains pending. Reviewers are requested to attempt reproduction and report findings; do not modify or remove manuscript or output files in this repository.
+> This repository contains a recovered implementation. Independent external reproduction of the computational results remains pending. Reviewers are requested to attempt reproduction and report findings; do not modify or remove manuscript or output files in this repository.
 
 Contact / next steps
 
