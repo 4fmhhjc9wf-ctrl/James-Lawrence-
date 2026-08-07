@@ -12,12 +12,6 @@ jobs:
     name: Clean repository safely
     runs-on: ubuntu-latest
 
-    env:
-      PYTHONPATH: ${{ github.workspace }}/src
-      CAMB_BUILD_DIR: ${{ runner.temp }}/camb-build
-      PYCAMB_OUTPUT_DIR: ${{ runner.temp }}/pycamb-output
-      FORUTILSPATH: ${{ github.workspace }}/../forutils
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,7 +19,18 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
-      - name: Configure Git
+      - name: Set runtime paths
+        run: |
+          set -euo pipefail
+
+          echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> "$GITHUB_ENV"
+          echo "FORUTILSPATH=$GITHUB_WORKSPACE/../forutils" >> "$GITHUB_ENV"
+          echo "CAMB_BUILD_DIR=$RUNNER_TEMP/camb-build" >> "$GITHUB_ENV"
+          echo "PYCAMB_OUTPUT_DIR=$RUNNER_TEMP/pycamb-output" >> "$GITHUB_ENV"
+
+          echo "Runtime paths configured."
+
+      - name: Configure Git and create cleanup branch
         run: |
           set -euo pipefail
 
@@ -33,6 +38,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           branch="cleanup/repository-structure-${GITHUB_RUN_ID}"
+
           echo "CLEANUP_BRANCH=$branch" >> "$GITHUB_ENV"
 
           git checkout -b "$branch"
@@ -88,6 +94,7 @@ jobs:
             fi
 
             git mv "$src" "$dest"
+
             echo "- \`$src\` → \`$dest\`" >> "$manifest"
             echo "MOVED $src -> $dest"
           }
@@ -270,7 +277,7 @@ jobs:
           git diff --stat
 
           echo
-          echo "No files have been pushed yet."
+          echo "Nothing has been pushed yet."
 
       - name: Commit cleanup locally
         run: |
@@ -307,15 +314,13 @@ jobs:
           echo "VERIFY MODEL IMPORT"
           echo "========================================"
 
-          python -c \
-            "from locked_saturation.model import ModelParameters, potential, potential_grad, auxiliaries, rhs; print('locked_saturation.model import PASS')"
+          python -c "from locked_saturation.model import ModelParameters, potential, potential_grad, auxiliaries, rhs; print('locked_saturation.model import PASS')"
 
           echo "========================================"
           echo "VERIFY VALIDATION IMPORT"
           echo "========================================"
 
-          python -c \
-            "from locked_saturation.validation import locked_arithmetic; print('locked arithmetic import PASS')"
+          python -c "from locked_saturation.validation import locked_arithmetic; print('locked arithmetic import PASS')"
 
           echo "========================================"
           echo "RUN LOCKED TESTS"
@@ -361,29 +366,30 @@ jobs:
         run: |
           set -euo pipefail
 
-          rm -rf ../forutils
+          rm -rf "$FORUTILSPATH"
 
           git clone \
             --depth=1 \
             https://github.com/cmbant/forutils.git \
-            ../forutils
+            "$FORUTILSPATH"
 
-          test -s ../forutils/Makefile
+          test -s "$FORUTILSPATH/Makefile"
 
           echo "FORUTILS CHECKOUT PASS"
 
-      - name: Restore missing official CAMB build source if required
+      - name: Restore missing official CAMB source if required
         if: env.NO_CLEANUP_CHANGES != 'true'
         run: |
           set -euo pipefail
 
           if [ ! -s RungeKuttaDP45.f90 ]; then
-            echo "Restoring RungeKuttaDP45.f90 for validation only"
+            echo "Restoring RungeKuttaDP45.f90 for validation only."
 
             curl \
               --fail \
               --location \
               --retry 3 \
+              --retry-delay 2 \
               https://raw.githubusercontent.com/cmbant/CAMB/2.0.1/fortran/RungeKuttaDP45.f90 \
               --output RungeKuttaDP45.f90
 
@@ -435,7 +441,20 @@ jobs:
           library="$PYCAMB_OUTPUT_DIR/camblib.so"
 
           if [ ! -s "$library" ]; then
-            echo "camblib.so was not produced."
+            echo "camblib.so was not produced at:"
+            echo "$library"
+
+            echo
+            echo "Searching for camblib.so..."
+
+            find \
+              "$RUNNER_TEMP" \
+              "$GITHUB_WORKSPACE" \
+              -type f \
+              -name "camblib.so" \
+              -print \
+              2>/dev/null || true
+
             exit 1
           fi
 
@@ -444,20 +463,19 @@ jobs:
 
           echo "FULL CAMB FORTRAN BUILD PASS"
 
-      - name: Confirm cleanup commit stayed clean
+      - name: Show validated cleanup commit
         if: env.NO_CLEANUP_CHANGES != 'true'
         run: |
           set -euo pipefail
 
-          echo "Validation may create temporary untracked build inputs."
-          echo "They will NOT be added to the cleanup commit."
+          echo "========================================"
+          echo "VALIDATED CLEANUP COMMIT"
+          echo "========================================"
 
-          echo
-          echo "Cleanup commit:"
           git show --stat --oneline HEAD
 
           echo
-          echo "Files outside the commit after validation:"
+          echo "Uncommitted validation-only files:"
           git status --short || true
 
           echo
@@ -476,6 +494,7 @@ jobs:
           echo "========================================"
           echo "VALIDATED CLEANUP BRANCH PUSHED"
           echo "========================================"
+
           echo "$CLEANUP_BRANCH"
 
       - name: Open cleanup pull request
@@ -494,10 +513,10 @@ jobs:
 
           - research notes → `docs/research-notes/`
           - reviewer documents → `docs/reviewer/`
-          - reports and technical PDFs/TEX → `docs/reports/`
+          - reports/PDF/TEX material → `docs/reports/`
           - notebooks → `notebooks/`
-          - generated diagnostic results → `results/diagnostics/`
-          - obvious numbered duplicate files → `archive/duplicate-files/`
+          - generated diagnostics → `results/diagnostics/`
+          - obvious numbered duplicates → `archive/duplicate-files/`
 
           ### Safety
 
@@ -505,15 +524,15 @@ jobs:
 
           Before this branch was pushed, GitHub Actions successfully ran:
 
-          - Locked Saturation model imports
-          - Locked Saturation arithmetic import
+          - Locked Saturation model import
+          - Locked Saturation validation import
           - `test_model.py`
           - `test_locked_arithmetic.py`
           - Python syntax compilation
-          - full recovered CAMB Fortran build
+          - full CAMB Fortran build
           - `camblib.so` verification
 
-          Nothing in `archive/duplicate-files/` has been deleted.
+          Nothing under `archive/duplicate-files/` has been deleted.
           EOF
           )"
 
@@ -527,11 +546,11 @@ jobs:
 
           else
             echo
-            echo "The cleanup branch was pushed successfully,"
-            echo "but GitHub did not allow Actions to create the PR automatically."
+            echo "The validated cleanup branch was pushed successfully,"
+            echo "but GitHub did not allow automatic PR creation."
             echo
             echo "Branch:"
             echo "$CLEANUP_BRANCH"
             echo
-            echo "You can open the PR manually from GitHub."
+            echo "Open a pull request from this branch manually."
           fi
