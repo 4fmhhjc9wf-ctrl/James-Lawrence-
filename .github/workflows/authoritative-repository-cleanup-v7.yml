@@ -12,11 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      WORKFLOW_VERSION: "cleanup-v7-authoritative"
-      PYTHONPATH: ${{ github.workspace }}/src
-      FORUTILSPATH: ${{ github.workspace }}/../forutils
-      CAMB_BUILD_DIR: ${{ runner.temp }}/camb-build
-      PYCAMB_OUTPUT_DIR: ${{ runner.temp }}/pycamb-output
+      WORKFLOW_VERSION: "cleanup-v7.1-corrected"
 
     steps:
       # ============================================================
@@ -27,6 +23,28 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      # ============================================================
+      # CONFIGURE PATHS
+      #
+      # RUNNER_TEMP is a shell environment variable.
+      # Do NOT use ${{ runner.temp }} in the job-level env block.
+      # ============================================================
+
+      - name: Configure runtime paths
+        run: |
+          set -euo pipefail
+
+          echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> "$GITHUB_ENV"
+          echo "PYTHONPYCACHEPREFIX=$RUNNER_TEMP/python-cache" >> "$GITHUB_ENV"
+
+          echo "FORUTILSPATH=$RUNNER_TEMP/forutils" >> "$GITHUB_ENV"
+
+          echo "CAMB_SOURCE_DIR=$RUNNER_TEMP/camb-source" >> "$GITHUB_ENV"
+          echo "CAMB_BUILD_DIR=$RUNNER_TEMP/camb-build" >> "$GITHUB_ENV"
+          echo "PYCAMB_OUTPUT_DIR=$RUNNER_TEMP/pycamb-output" >> "$GITHUB_ENV"
+
+          echo "Runtime paths configured."
 
       - name: Show workflow identity
         run: |
@@ -89,7 +107,15 @@ jobs:
           shopt -s nullglob
 
           for f in 2026-*.md; do
-            git mv "$f" docs/research-notes/
+            destination="docs/research-notes/$f"
+
+            if [ -e "$destination" ]; then
+              echo "ERROR: destination already exists:"
+              echo "$destination"
+              exit 1
+            fi
+
+            git mv "$f" "$destination"
             echo "Moved research note: $f"
           done
 
@@ -104,7 +130,15 @@ jobs:
           shopt -s nullglob
 
           for f in *.ipynb; do
-            git mv "$f" notebooks/
+            destination="notebooks/$f"
+
+            if [ -e "$destination" ]; then
+              echo "ERROR: destination already exists:"
+              echo "$destination"
+              exit 1
+            fi
+
+            git mv "$f" "$destination"
             echo "Moved notebook: $f"
           done
 
@@ -128,13 +162,21 @@ jobs:
 
           for f in "${files[@]}"; do
             if [ -f "$f" ]; then
-              git mv "$f" docs/reviewer/
+              destination="docs/reviewer/$f"
+
+              if [ -e "$destination" ]; then
+                echo "ERROR: destination already exists:"
+                echo "$destination"
+                exit 1
+              fi
+
+              git mv "$f" "$destination"
               echo "Moved reviewer document: $f"
             fi
           done
 
       # ============================================================
-      # MOVE REMAINING ROOT REPORTS
+      # MOVE REMAINING ROOT PDF AND TEX REPORT FILES
       # ============================================================
 
       - name: Move remaining root PDFs and TEX files
@@ -144,17 +186,33 @@ jobs:
           shopt -s nullglob
 
           for f in *.pdf; do
-            git mv "$f" docs/reports/
+            destination="docs/reports/$f"
+
+            if [ -e "$destination" ]; then
+              echo "ERROR: destination already exists:"
+              echo "$destination"
+              exit 1
+            fi
+
+            git mv "$f" "$destination"
             echo "Moved report: $f"
           done
 
           for f in *.tex; do
-            git mv "$f" docs/reports/
+            destination="docs/reports/$f"
+
+            if [ -e "$destination" ]; then
+              echo "ERROR: destination already exists:"
+              echo "$destination"
+              exit 1
+            fi
+
+            git mv "$f" "$destination"
             echo "Moved TEX source: $f"
           done
 
       # ============================================================
-      # MOVE GENERATED RESULTS
+      # MOVE GENERATED RESULT FILES
       # ============================================================
 
       - name: Move generated result files
@@ -163,21 +221,33 @@ jobs:
           set -euo pipefail
           shopt -s nullglob
 
-          for f in \
-            final_*.csv \
-            final_*.json \
-            *_diagnostics.json \
-            *_results.csv \
-            *_results.json
-          do
-            [ -e "$f" ] || continue
+          patterns=(
+            "final_*.csv"
+            "final_*.json"
+            "*_diagnostics.json"
+            "*_results.csv"
+            "*_results.json"
+          )
 
-            git mv "$f" results/diagnostics/
-            echo "Moved generated result: $f"
+          for pattern in "${patterns[@]}"; do
+            for f in $pattern; do
+              [ -e "$f" ] || continue
+
+              destination="results/diagnostics/$f"
+
+              if [ -e "$destination" ]; then
+                echo "ERROR: destination already exists:"
+                echo "$destination"
+                exit 1
+              fi
+
+              git mv "$f" "$destination"
+              echo "Moved generated result: $f"
+            done
           done
 
       # ============================================================
-      # ARCHIVE OBVIOUS DUPLICATES
+      # ARCHIVE OBVIOUS DUPLICATE ROOT FILES
       # ============================================================
 
       - name: Archive obvious duplicate files
@@ -186,21 +256,33 @@ jobs:
           set -euo pipefail
           shopt -s nullglob
 
-          for f in \
-            README-[0-9]*.md \
-            CHANGELOG-[0-9]*.md \
-            CONTRIBUTING-[0-9]*.md \
-            Makefile-[0-9]* \
-            pyproject-[0-9]*.toml
-          do
-            [ -e "$f" ] || continue
+          patterns=(
+            "README-[0-9]*.md"
+            "CHANGELOG-[0-9]*.md"
+            "CONTRIBUTING-[0-9]*.md"
+            "Makefile-[0-9]*"
+            "pyproject-[0-9]*.toml"
+          )
 
-            git mv "$f" archive/duplicate-files/
-            echo "Archived duplicate: $f"
+          for pattern in "${patterns[@]}"; do
+            for f in $pattern; do
+              [ -e "$f" ] || continue
+
+              destination="archive/duplicate-files/$f"
+
+              if [ -e "$destination" ]; then
+                echo "ERROR: destination already exists:"
+                echo "$destination"
+                exit 1
+              fi
+
+              git mv "$f" "$destination"
+              echo "Archived duplicate: $f"
+            done
           done
 
       # ============================================================
-      # VERIFY CRITICAL FILES WERE NOT MOVED OR DELETED
+      # VERIFY CRITICAL SCIENTIFIC / BUILD FILES
       # ============================================================
 
       - name: Verify build-critical files
@@ -240,7 +322,7 @@ jobs:
           echo "========================================"
 
       # ============================================================
-      # REVIEW CLEANUP BEFORE COMMIT
+      # REVIEW CLEANUP BEFORE COMMITTING
       # ============================================================
 
       - name: Review cleanup
@@ -262,6 +344,8 @@ jobs:
 
       # ============================================================
       # COMMIT CLEANUP LOCALLY
+      #
+      # NOTHING IS PUSHED YET.
       # ============================================================
 
       - name: Commit cleanup locally
@@ -332,7 +416,6 @@ jobs:
 
           for module in modules:
               path = module.__file__.replace("\\", "/")
-
               print(f"{module.__name__}: {path}")
 
               if expected not in path:
@@ -355,7 +438,10 @@ jobs:
           PY
 
       # ============================================================
-      # RUN LOCKED SATURATION TESTS OUTSIDE CAMB ROOT
+      # RUN TESTS IN AN ISOLATED DIRECTORY
+      #
+      # THIS PREVENTS PYTEST FROM COLLECTING THE ROOT CAMB
+      # __init__.py THAT CAUSED THE PREVIOUS FAILURES.
       # ============================================================
 
       - name: Run Locked Saturation tests in isolated directory
@@ -385,7 +471,7 @@ jobs:
           pwd
 
           echo
-          echo "Files:"
+          echo "Test files:"
           ls -la
 
           echo
@@ -415,6 +501,9 @@ jobs:
 
       # ============================================================
       # COMPILE PYTHON SOURCES
+      #
+      # PYTHONPYCACHEPREFIX POINTS INTO RUNNER_TEMP, SO THIS DOES
+      # NOT LEAVE __pycache__ FILES IN THE REPOSITORY.
       # ============================================================
 
       - name: Compile Locked Saturation Python sources
@@ -434,7 +523,7 @@ jobs:
           echo "Python compilation PASS."
 
       # ============================================================
-      # INSTALL FORTRAN TOOLCHAIN
+      # INSTALL FORTRAN BUILD TOOLCHAIN
       # ============================================================
 
       - name: Install Fortran build toolchain
@@ -458,7 +547,7 @@ jobs:
           git --version
 
       # ============================================================
-      # FETCH FORUTILS
+      # FETCH FORUTILS INTO RUNNER TEMP
       # ============================================================
 
       - name: Fetch forutils
@@ -480,29 +569,57 @@ jobs:
           echo "forutils checkout PASS."
 
       # ============================================================
-      # RESTORE TEMPORARY CAMB SOURCE ONLY IF REQUIRED
+      # CREATE A TEMPORARY SNAPSHOT OF THE CLEANED REPOSITORY
+      #
+      # THE CAMB BUILD RUNS THERE, NOT IN THE REAL WORKTREE.
+      # THIS PREVENTS MAKE FROM LEAVING compiler.ver, .d, .mod,
+      # OBJECT FILES, OR OTHER BUILD ARTIFACTS IN THE CLEANUP TREE.
       # ============================================================
 
-      - name: Restore RungeKuttaDP45 temporarily if required
+      - name: Prepare temporary CAMB source snapshot
         run: |
           set -euo pipefail
 
+          rm -rf "$CAMB_SOURCE_DIR"
+          mkdir -p "$CAMB_SOURCE_DIR"
+
           cd "$GITHUB_WORKSPACE"
 
+          git archive HEAD | tar -x -C "$CAMB_SOURCE_DIR"
+
+          if [ ! -f "$CAMB_SOURCE_DIR/Makefile" ]; then
+            echo "ERROR: temporary CAMB source snapshot is incomplete."
+            exit 1
+          fi
+
+          if [ ! -f "$CAMB_SOURCE_DIR/Makefile_main" ]; then
+            echo "ERROR: temporary CAMB source snapshot is missing Makefile_main."
+            exit 1
+          fi
+
+          echo "Temporary CAMB source snapshot PASS."
+
+      # ============================================================
+      # RESTORE RUNGEKUTTADP45 ONLY INSIDE TEMPORARY BUILD COPY
+      # ============================================================
+
+      - name: Restore RungeKuttaDP45 in temporary source if required
+        run: |
+          set -euo pipefail
+
+          cd "$CAMB_SOURCE_DIR"
+
           if [ -s RungeKuttaDP45.f90 ]; then
-            echo "RUNGEKUTTA_TEMPORARY=false" >> "$GITHUB_ENV"
-            echo "RungeKuttaDP45.f90 already present."
+            echo "RungeKuttaDP45.f90 already present in source snapshot."
           else
-            echo "RungeKuttaDP45.f90 is absent."
-            echo "Downloading temporary CAMB 2.0.1 copy."
+            echo "RungeKuttaDP45.f90 absent."
+            echo "Downloading CAMB 2.0.1 source into temporary build tree."
 
             curl \
               --fail \
               --location \
               https://raw.githubusercontent.com/cmbant/CAMB/2.0.1/fortran/RungeKuttaDP45.f90 \
               --output RungeKuttaDP45.f90
-
-            echo "RUNGEKUTTA_TEMPORARY=true" >> "$GITHUB_ENV"
           fi
 
           if [ ! -s RungeKuttaDP45.f90 ]; then
@@ -539,6 +656,7 @@ jobs:
           echo "CAMB BUILD PATHS"
           echo "========================================"
 
+          echo "CAMB_SOURCE_DIR=$CAMB_SOURCE_DIR"
           echo "FORUTILSPATH=$FORUTILSPATH"
           echo "CAMB_BUILD_DIR=$CAMB_BUILD_DIR"
           echo "PYCAMB_OUTPUT_DIR=$PYCAMB_OUTPUT_DIR"
@@ -551,7 +669,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          cd "$GITHUB_WORKSPACE"
+          cd "$CAMB_SOURCE_DIR"
 
           echo "========================================"
           echo "BUILDING FULL CAMB FORTRAN LIBRARY"
@@ -580,24 +698,6 @@ jobs:
           echo "========================================"
 
       # ============================================================
-      # REMOVE TEMPORARY SOURCE FILE
-      # ============================================================
-
-      - name: Remove temporary RungeKuttaDP45 source
-        if: always()
-        run: |
-          set -euo pipefail
-
-          cd "$GITHUB_WORKSPACE"
-
-          if [ "${RUNGEKUTTA_TEMPORARY:-false}" = "true" ]; then
-            rm -f RungeKuttaDP45.f90
-            echo "Removed temporary RungeKuttaDP45.f90."
-          else
-            echo "No temporary RungeKuttaDP45 source to remove."
-          fi
-
-      # ============================================================
       # FINAL WORKTREE SAFETY CHECK
       # ============================================================
 
@@ -623,7 +723,7 @@ jobs:
           echo "Validation left the cleanup commit unchanged."
 
       # ============================================================
-      # PUSH ONLY AFTER EVERYTHING PASSES
+      # PUSH ONLY AFTER ALL TESTS AND BUILD PASS
       # ============================================================
 
       - name: Push validated cleanup branch
@@ -662,7 +762,7 @@ jobs:
           echo "Locked Saturation tests: PASS"
           echo "Python compilation: PASS"
           echo "CAMB Fortran build: PASS"
-          echo "Temporary build files: REMOVED"
+          echo "Build artifacts isolated from repository: PASS"
 
           if [ "${{ steps.cleanup_commit.outputs.changed }}" = "true" ]; then
             echo "Cleanup branch: PUSHED"
