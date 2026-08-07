@@ -117,7 +117,6 @@ jobs:
               --output "$f"
 
             test -s "$f"
-
             echo "RESTORED  $f"
           done
 
@@ -171,27 +170,29 @@ jobs:
           rm -rf "$CAMB_BUILD_DIR"
           rm -rf "$PYCAMB_OUTPUT_DIR"
 
-          mkdir -p "$CAMB_BUILD_DIR"
-          mkdir -p "$CAMB_BUILD_DIR/forutils"
           mkdir -p "$CAMB_BUILD_DIR/forutils/Releaselib"
           mkdir -p "$CAMB_BUILD_DIR/forutils/Debuglib"
-          mkdir -p "$CAMB_BUILD_DIR/Releaselib"
-          mkdir -p "$CAMB_BUILD_DIR/Debuglib"
+          mkdir -p "$CAMB_BUILD_DIR/forutils/Release"
+          mkdir -p "$CAMB_BUILD_DIR/forutils/Debug"
+
+          mkdir -p "$CAMB_BUILD_DIR/camb/Releaselib"
+          mkdir -p "$CAMB_BUILD_DIR/camb/Debuglib"
+          mkdir -p "$CAMB_BUILD_DIR/camb/Release"
+          mkdir -p "$CAMB_BUILD_DIR/camb/Debug"
+
           mkdir -p "$PYCAMB_OUTPUT_DIR"
 
-          echo "=== BUILD DIRECTORY TREE ==="
+          echo "========================================"
+          echo "BUILD DIRECTORY TREE"
+          echo "========================================"
 
           find "$CAMB_BUILD_DIR" \
             -maxdepth 3 \
             -type d \
             -print
 
-          echo
-          echo "CAMB_BUILD_DIR=$CAMB_BUILD_DIR"
-          echo "PYCAMB_OUTPUT_DIR=$PYCAMB_OUTPUT_DIR"
-
           test -d "$CAMB_BUILD_DIR/forutils/Releaselib"
-          test -d "$CAMB_BUILD_DIR/forutils/Debuglib"
+          test -d "$CAMB_BUILD_DIR/camb/Releaselib"
           test -d "$PYCAMB_OUTPUT_DIR"
 
           echo "BUILD DIRECTORY PREPARATION PASS"
@@ -204,7 +205,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          echo "=== MAKE DRY RUN ==="
+          echo "========================================"
+          echo "MAKE DRY RUN"
+          echo "========================================"
 
           make -n python \
             FORUTILSPATH="$FORUTILSPATH" \
@@ -214,7 +217,7 @@ jobs:
 
           test -s /tmp/camb-make-dry-run.txt
 
-          echo "=== FIRST 100 LINES OF DRY RUN ==="
+          echo "=== FIRST 100 LINES ==="
           head -100 /tmp/camb-make-dry-run.txt
 
           echo
@@ -228,11 +231,16 @@ jobs:
         run: |
           set -euo pipefail
 
-          mkdir -p "$CAMB_BUILD_DIR"
           mkdir -p "$CAMB_BUILD_DIR/forutils/Releaselib"
           mkdir -p "$CAMB_BUILD_DIR/forutils/Debuglib"
-          mkdir -p "$CAMB_BUILD_DIR/Releaselib"
-          mkdir -p "$CAMB_BUILD_DIR/Debuglib"
+          mkdir -p "$CAMB_BUILD_DIR/forutils/Release"
+          mkdir -p "$CAMB_BUILD_DIR/forutils/Debug"
+
+          mkdir -p "$CAMB_BUILD_DIR/camb/Releaselib"
+          mkdir -p "$CAMB_BUILD_DIR/camb/Debuglib"
+          mkdir -p "$CAMB_BUILD_DIR/camb/Release"
+          mkdir -p "$CAMB_BUILD_DIR/camb/Debug"
+
           mkdir -p "$PYCAMB_OUTPUT_DIR"
 
           echo "========================================"
