@@ -1,79 +1,217 @@
-name: Validate Locked Saturation
+name: Repository cleanup and validation
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  locked-saturation-validation:
-    name: Locked Saturation validation
+  cleanup:
+    name: Clean repository safely
     runs-on: ubuntu-latest
 
     env:
+      WORKFLOW_VERSION: "cleanup-v5-verified"
       PYTHONPATH: ${{ github.workspace }}/src
-      WORKFLOW_VERSION: "2026-08-07-validation-isolated-v3"
+      FORUTILSPATH: ${{ github.workspace }}/../forutils
+      CAMB_BUILD_DIR: ${{ runner.temp }}/camb-build
+      PYCAMB_OUTPUT_DIR: ${{ runner.temp }}/pycamb-output
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Show validation workflow version
+      - name: Show workflow identity
+        run: |
+          set -euo pipefail
+          echo "REPOSITORY CLEANUP WORKFLOW"
+          echo "VERSION: $WORKFLOW_VERSION"
+          echo "COMMIT: $GITHUB_SHA"
+          echo "REF: $GITHUB_REF"
+          echo "RUN: $GITHUB_RUN_ID"
+
+      - name: Configure Git and create cleanup branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          branch="cleanup/repository-structure-${GITHUB_RUN_ID}"
+          echo "CLEANUP_BRANCH=$branch" >> "$GITHUB_ENV"
+
+          git checkout -b "$branch"
+
+      - name: Create cleanup directories
+        run: |
+          set -euo pipefail
+
+          mkdir -p \
+            docs/research-notes \
+            docs/reviewer \
+            docs/reports \
+            notebooks \
+            results/diagnostics \
+            archive/duplicate-files
+
+      - name: Move dated research notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          for f in 2026-*.md; do
+            git mv "$f" docs/research-notes/
+          done
+
+      - name: Move notebooks
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          for f in *.ipynb; do
+            git mv "$f" notebooks/
+          done
+
+      - name: Move reviewer documents
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          files=(
+            Executive_Summary.pdf
+            Independent_Reviewer_Guide.pdf
+            Reviewer_Roadmap.pdf
+            Reproduction_Guide.pdf
+            Technical_Synopsis.pdf
+            QA_Audit.pdf
+          )
+
+          for f in "${files[@]}"; do
+            if [ -f "$f" ]; then
+              git mv "$f" docs/reviewer/
+            fi
+          done
+
+      - name: Move remaining root PDFs and TEX files
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          for f in *.pdf; do
+            git mv "$f" docs/reports/
+          done
+
+          for f in *.tex; do
+            git mv "$f" docs/reports/
+          done
+
+      - name: Move generated result files
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          for f in \
+            final_*.csv \
+            final_*.json \
+            *_diagnostics.json \
+            *_results.csv \
+            *_results.json
+          do
+            [ -e "$f" ] || continue
+            git mv "$f" results/diagnostics/
+          done
+
+      - name: Archive obvious duplicate files
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          for f in \
+            README-[0-9]*.md \
+            CHANGELOG-[0-9]*.md \
+            CONTRIBUTING-[0-9]*.md \
+            Makefile-[0-9]* \
+            pyproject-[0-9]*.toml
+          do
+            [ -e "$f" ] || continue
+            git mv "$f" archive/duplicate-files/
+          done
+
+      - name: Verify build-critical files
+        run: |
+          set -euo pipefail
+
+          critical_files=(
+            Makefile
+            Makefile_main
+            setup.py
+            pyproject.toml
+            sat_locked_background.inc
+            equations.f90
+            camb.f90
+            camb_python.f90
+            test_model.py
+            test_locked_arithmetic.py
+            src/locked_saturation/__init__.py
+            src/locked_saturation/model.py
+            src/locked_saturation/validation.py
+          )
+
+          for f in "${critical_files[@]}"; do
+            test -f "$f" || {
+              echo "CRITICAL FILE MISSING: $f"
+              exit 1
+            }
+
+            echo "PRESENT: $f"
+          done
+
+      - name: Review cleanup
         run: |
           set -euo pipefail
 
           echo "========================================"
-          echo "LOCKED SATURATION VALIDATION"
-          echo "WORKFLOW VERSION: $WORKFLOW_VERSION"
-          echo "COMMIT: $GITHUB_SHA"
-          echo "REF: $GITHUB_REF"
+          echo "CLEANUP CHANGES"
           echo "========================================"
+
+          git status --short
+          git diff --stat
+
+      - name: Commit cleanup locally
+        id: cleanup_commit
+        run: |
+          set -euo pipefail
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No cleanup changes were necessary."
+          else
+            git commit -m "chore: organize repository structure"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install validation dependencies
+      - name: Install Python validation dependencies
         run: |
           set -euo pipefail
 
           python -m pip install --upgrade pip
           python -m pip install pytest numpy scipy sympy packaging
 
-          echo "Python validation dependencies installed."
-
-      - name: Verify required files
-        run: |
-          set -euo pipefail
-
-          required_files=(
-            src/locked_saturation/__init__.py
-            src/locked_saturation/model.py
-            src/locked_saturation/validation.py
-            test_model.py
-            test_locked_arithmetic.py
-          )
-
-          for f in "${required_files[@]}"; do
-            if [ ! -f "$f" ]; then
-              echo "ERROR: required file missing: $f"
-              exit 1
-            fi
-
-            echo "PRESENT: $f"
-          done
-
-          echo "Required-file check PASS"
-
-      - name: Verify Locked Saturation package imports
+      - name: Verify Locked Saturation imports
         run: |
           set -euo pipefail
 
@@ -82,27 +220,6 @@ jobs:
           import locked_saturation.model
           import locked_saturation.validation
 
-          print("locked_saturation:")
-          print(locked_saturation.__file__)
-
-          print("locked_saturation.model:")
-          print(locked_saturation.model.__file__)
-
-          print("locked_saturation.validation:")
-          print(locked_saturation.validation.__file__)
-
-          assert "/src/locked_saturation/" in locked_saturation.__file__
-          assert "/src/locked_saturation/" in locked_saturation.model.__file__
-          assert "/src/locked_saturation/" in locked_saturation.validation.__file__
-
-          print("Locked Saturation package-location check PASS")
-          PY
-
-      - name: Verify model imports
-        run: |
-          set -euo pipefail
-
-          python - <<'PY'
           from locked_saturation.model import (
               ModelParameters,
               potential,
@@ -111,102 +228,57 @@ jobs:
               rhs,
           )
 
-          p = ModelParameters()
-
-          print("ModelParameters import PASS")
-          print("potential import PASS")
-          print("potential_grad import PASS")
-          print("auxiliaries import PASS")
-          print("rhs import PASS")
-          print("Model import verification PASS")
-          PY
-
-      - name: Verify locked arithmetic import
-        run: |
-          set -euo pipefail
-
-          python - <<'PY'
           from locked_saturation.validation import locked_arithmetic
 
+          expected = "/src/locked_saturation/"
+
+          for module in (
+              locked_saturation,
+              locked_saturation.model,
+              locked_saturation.validation,
+          ):
+              path = module.__file__.replace("\\", "/")
+              print(path)
+              assert expected in path, path
+
           result = locked_arithmetic()
+          assert isinstance(result, dict)
 
-          if not isinstance(result, dict):
-              raise TypeError(
-                  "locked_arithmetic() must return a dictionary"
-              )
+          ModelParameters()
 
-          print("locked_arithmetic import PASS")
-          print("locked_arithmetic execution PASS")
+          print("Locked Saturation imports PASS")
           PY
 
-      - name: Prepare isolated pytest directory
+      - name: Run Locked Saturation tests in isolated directory
         run: |
           set -euo pipefail
 
-          TEST_DIR="$RUNNER_TEMP/locked-saturation-tests"
+          test_dir="$RUNNER_TEMP/locked-saturation-tests"
 
-          rm -rf "$TEST_DIR"
-          mkdir -p "$TEST_DIR"
+          rm -rf "$test_dir"
+          mkdir -p "$test_dir"
 
-          cp "$GITHUB_WORKSPACE/test_model.py" "$TEST_DIR/"
-          cp "$GITHUB_WORKSPACE/test_locked_arithmetic.py" "$TEST_DIR/"
+          cp "$GITHUB_WORKSPACE/test_model.py" "$test_dir/"
+          cp "$GITHUB_WORKSPACE/test_locked_arithmetic.py" "$test_dir/"
 
-          echo "TEST_DIR=$TEST_DIR" >> "$GITHUB_ENV"
+          cd "$test_dir"
 
-          echo "========================================"
-          echo "ISOLATED TEST DIRECTORY"
-          echo "========================================"
-          echo "$TEST_DIR"
-
-          ls -la "$TEST_DIR"
-
-          if [ -e "$TEST_DIR/__init__.py" ]; then
-            echo "ERROR: repository __init__.py leaked into test directory"
-            exit 1
-          fi
-
-          echo "No root __init__.py present."
-          echo "Isolated pytest directory PASS"
-
-      - name: Run Locked Saturation tests
-        run: |
-          set -euo pipefail
-
-          cd "$TEST_DIR"
-
-          echo "========================================"
-          echo "RUNNING LOCKED SATURATION TESTS"
-          echo "========================================"
-
-          echo "Current working directory:"
+          echo "Working directory:"
           pwd
 
-          echo
-          echo "Directory contents:"
+          echo "Test files:"
           ls -la
 
-          echo
-          echo "PYTHONPATH:"
-          echo "$PYTHONPATH"
-
-          echo
-          echo "Confirming CAMB root __init__.py cannot be collected:"
-
-          if [ -e "__init__.py" ]; then
-            echo "ERROR: unexpected __init__.py in test directory"
-            exit 1
-          fi
+          test ! -e "__init__.py"
 
           python -m pytest \
-            --rootdir="$TEST_DIR" \
+            --rootdir="$test_dir" \
             --import-mode=importlib \
             -q \
             test_model.py \
             test_locked_arithmetic.py
 
-          echo "========================================"
-          echo "LOCKED SATURATION TESTS PASS"
-          echo "========================================"
+          echo "Locked Saturation tests PASS"
 
       - name: Compile Locked Saturation Python sources
         run: |
@@ -215,22 +287,107 @@ jobs:
           cd "$GITHUB_WORKSPACE"
 
           python -m compileall -q src/locked_saturation
-          python -m py_compile test_model.py
-          python -m py_compile test_locked_arithmetic.py
+          python -m py_compile \
+            test_model.py \
+            test_locked_arithmetic.py
 
-          echo "Locked Saturation Python compilation PASS"
+          echo "Python compilation PASS"
 
-      - name: Validation summary
+      - name: Install Fortran build toolchain
         run: |
           set -euo pipefail
 
+          sudo apt-get update
+          sudo apt-get install -y gfortran make git curl
+
+          gfortran --version
+          make --version
+
+      - name: Fetch forutils
+        run: |
+          set -euo pipefail
+
+          rm -rf "$FORUTILSPATH"
+
+          git clone \
+            --depth=1 \
+            https://github.com/cmbant/forutils.git \
+            "$FORUTILSPATH"
+
+          test -f "$FORUTILSPATH/Makefile"
+
+      - name: Restore RungeKuttaDP45 if required
+        run: |
+          set -euo pipefail
+
+          cd "$GITHUB_WORKSPACE"
+
+          if [ ! -s RungeKuttaDP45.f90 ]; then
+            curl \
+              --fail \
+              --location \
+              https://raw.githubusercontent.com/cmbant/CAMB/2.0.1/fortran/RungeKuttaDP45.f90 \
+              --output RungeKuttaDP45.f90
+          fi
+
+          test -s RungeKuttaDP45.f90
+
+      - name: Prepare CAMB build directories
+        run: |
+          set -euo pipefail
+
+          rm -rf "$CAMB_BUILD_DIR" "$PYCAMB_OUTPUT_DIR"
+
+          mkdir -p \
+            "$CAMB_BUILD_DIR/forutils/Releaselib" \
+            "$CAMB_BUILD_DIR/forutils/Debuglib" \
+            "$CAMB_BUILD_DIR/forutils/Release" \
+            "$CAMB_BUILD_DIR/forutils/Debug" \
+            "$CAMB_BUILD_DIR/camb/Releaselib" \
+            "$CAMB_BUILD_DIR/camb/Debuglib" \
+            "$CAMB_BUILD_DIR/camb/Release" \
+            "$CAMB_BUILD_DIR/camb/Debug" \
+            "$PYCAMB_OUTPUT_DIR"
+
+      - name: Build full CAMB Fortran library
+        run: |
+          set -euo pipefail
+
+          cd "$GITHUB_WORKSPACE"
+
+          make python \
+            FORUTILSPATH="$FORUTILSPATH" \
+            CAMB_BUILD_DIR="$CAMB_BUILD_DIR" \
+            PYCAMB_OUTPUT_DIR="$PYCAMB_OUTPUT_DIR"
+
+          test -s "$PYCAMB_OUTPUT_DIR/camblib.so"
+
+          ls -lh "$PYCAMB_OUTPUT_DIR/camblib.so"
+          file "$PYCAMB_OUTPUT_DIR/camblib.so"
+
+          echo "FULL CAMB FORTRAN BUILD PASS"
+
+      - name: Push validated cleanup branch
+        if: steps.cleanup_commit.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+
+          cd "$GITHUB_WORKSPACE"
+
+          git push \
+            --set-upstream \
+            origin \
+            "$CLEANUP_BRANCH"
+
+          echo "Validated branch pushed: $CLEANUP_BRANCH"
+
+      - name: Final summary
+        run: |
           echo "========================================"
-          echo "VALIDATION COMPLETE"
+          echo "REPOSITORY CLEANUP VALIDATION COMPLETE"
           echo "========================================"
           echo "Workflow: $WORKFLOW_VERSION"
-          echo "Package imports: PASS"
-          echo "Model imports: PASS"
-          echo "Locked arithmetic execution: PASS"
-          echo "Isolated pytest: PASS"
+          echo "Python imports: PASS"
+          echo "Locked Saturation tests: PASS"
           echo "Python compilation: PASS"
-          echo "========================================"
+          echo "CAMB Fortran build: PASS"
