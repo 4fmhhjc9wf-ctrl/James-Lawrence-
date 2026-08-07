@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      WORKFLOW_VERSION: "cleanup-v6-remove-obsolete-validation"
+      WORKFLOW_VERSION: "cleanup-v7-final"
       PYTHONPATH: ${{ github.workspace }}/src
       FORUTILSPATH: ${{ github.workspace }}/../forutils
       CAMB_BUILD_DIR: ${{ runner.temp }}/camb-build
@@ -41,7 +41,7 @@ jobs:
           echo "========================================"
 
       # ============================================================
-      # CREATE SAFE CLEANUP BRANCH
+      # SAFE CLEANUP BRANCH
       # ============================================================
 
       - name: Configure Git and create cleanup branch
@@ -61,7 +61,7 @@ jobs:
           echo "$branch"
 
       # ============================================================
-      # REMOVE OBSOLETE / BROKEN WORKFLOW
+      # REMOVE THE OBSOLETE DUPLICATE WORKFLOW
       # ============================================================
 
       - name: Remove obsolete Locked Saturation validation workflow
@@ -78,12 +78,12 @@ jobs:
             echo "$obsolete"
             echo "========================================"
           else
-            echo "Obsolete workflow already absent:"
+            echo "Obsolete workflow is already absent:"
             echo "$obsolete"
           fi
 
       # ============================================================
-      # CREATE ORGANIZED DIRECTORY STRUCTURE
+      # CREATE CLEAN DIRECTORY STRUCTURE
       # ============================================================
 
       - name: Create cleanup directories
@@ -98,10 +98,10 @@ jobs:
             results/diagnostics \
             archive/duplicate-files
 
-          echo "Repository cleanup directories ready."
+          echo "Cleanup directories ready."
 
       # ============================================================
-      # MOVE RESEARCH NOTES
+      # MOVE DATED RESEARCH NOTES
       # ============================================================
 
       - name: Move dated research notes
@@ -112,6 +112,7 @@ jobs:
 
           for f in 2026-*.md; do
             git mv "$f" docs/research-notes/
+            echo "Moved: $f"
           done
 
       # ============================================================
@@ -126,6 +127,7 @@ jobs:
 
           for f in *.ipynb; do
             git mv "$f" notebooks/
+            echo "Moved: $f"
           done
 
       # ============================================================
@@ -154,7 +156,7 @@ jobs:
           done
 
       # ============================================================
-      # MOVE REMAINING REPORT DOCUMENTS
+      # MOVE REMAINING ROOT REPORTS
       # ============================================================
 
       - name: Move remaining root PDFs and TEX files
@@ -165,10 +167,12 @@ jobs:
 
           for f in *.pdf; do
             git mv "$f" docs/reports/
+            echo "Moved report: $f"
           done
 
           for f in *.tex; do
             git mv "$f" docs/reports/
+            echo "Moved TEX source: $f"
           done
 
       # ============================================================
@@ -220,7 +224,7 @@ jobs:
           done
 
       # ============================================================
-      # SAFETY CHECK — SCIENTIFIC / BUILD FILES MUST REMAIN
+      # PROTECT BUILD / MODEL FILES
       # ============================================================
 
       - name: Verify build-critical files
@@ -244,7 +248,6 @@ jobs:
           )
 
           for f in "${critical_files[@]}"; do
-
             if [ ! -f "$f" ]; then
               echo "========================================"
               echo "CRITICAL FILE MISSING"
@@ -261,7 +264,7 @@ jobs:
           echo "========================================"
 
       # ============================================================
-      # CONFIRM OBSOLETE WORKFLOW IS ACTUALLY GONE
+      # MAKE SURE BAD WORKFLOW IS GONE
       # ============================================================
 
       - name: Verify obsolete workflow removal
@@ -276,10 +279,10 @@ jobs:
             exit 1
           fi
 
-          echo "Obsolete validation workflow removal PASS."
+          echo "Obsolete workflow removal PASS."
 
       # ============================================================
-      # REVIEW THE CLEANUP BEFORE COMMITTING
+      # REVIEW CLEANUP
       # ============================================================
 
       - name: Review cleanup
@@ -287,7 +290,7 @@ jobs:
           set -euo pipefail
 
           echo "========================================"
-          echo "CLEANUP CHANGES"
+          echo "CLEANUP STATUS"
           echo "========================================"
 
           git status --short
@@ -300,7 +303,7 @@ jobs:
           git diff --stat
 
       # ============================================================
-      # COMMIT LOCALLY — DO NOT PUSH YET
+      # COMMIT CLEANUP LOCALLY FIRST
       # ============================================================
 
       - name: Commit cleanup locally
@@ -311,20 +314,15 @@ jobs:
           git add -A
 
           if git diff --cached --quiet; then
-
             echo "changed=false" >> "$GITHUB_OUTPUT"
-
             echo "No cleanup changes were necessary."
-
           else
-
             git commit \
-              -m "chore: organize repository and remove obsolete validation workflow"
+              -m "chore: clean repository and remove obsolete validation workflow"
 
             echo "changed=true" >> "$GITHUB_OUTPUT"
 
             echo "Cleanup commit created locally."
-
           fi
 
       # ============================================================
@@ -341,15 +339,12 @@ jobs:
           set -euo pipefail
 
           python -m pip install --upgrade pip
-
-          python -m pip install \
-            pytest \
-            numpy
+          python -m pip install pytest numpy
 
           echo "Python validation dependencies installed."
 
       # ============================================================
-      # VERIFY THE ACTUAL LOCKED SATURATION PACKAGE
+      # VERIFY LOCKED SATURATION PACKAGE
       # ============================================================
 
       - name: Verify Locked Saturation imports
@@ -380,7 +375,6 @@ jobs:
           )
 
           for module in modules:
-
               path = module.__file__.replace("\\", "/")
 
               print(f"{module.__name__}: {path}")
@@ -390,7 +384,7 @@ jobs:
                       f"Unexpected Locked Saturation module location: {path}"
                   )
 
-          parameters = ModelParameters()
+          ModelParameters()
 
           result = locked_arithmetic()
 
@@ -401,11 +395,12 @@ jobs:
 
           print("ModelParameters construction PASS")
           print("Locked arithmetic execution PASS")
-          print("Locked Saturation import verification PASS")
+          print("Locked Saturation imports PASS")
           PY
 
       # ============================================================
-      # RUN TESTS AWAY FROM CAMB ROOT __init__.py
+      # ISOLATED PYTEST
+      # THIS PREVENTS CAMB ROOT __init__.py FROM BEING COLLECTED
       # ============================================================
 
       - name: Run Locked Saturation tests in isolated directory
@@ -415,7 +410,6 @@ jobs:
           test_dir="$RUNNER_TEMP/locked-saturation-tests"
 
           rm -rf "$test_dir"
-
           mkdir -p "$test_dir"
 
           cp \
@@ -443,9 +437,6 @@ jobs:
           echo "PYTHONPATH:"
           echo "$PYTHONPATH"
 
-          # The previous failed runs happened because pytest collected
-          # the repository-root CAMB __init__.py. It must not exist here.
-
           if [ -e "__init__.py" ]; then
             echo "ERROR: __init__.py leaked into isolated test directory."
             exit 1
@@ -468,7 +459,7 @@ jobs:
           echo "========================================"
 
       # ============================================================
-      # COMPILE PYTHON
+      # COMPILE PYTHON SOURCES
       # ============================================================
 
       - name: Compile Locked Saturation Python sources
@@ -488,7 +479,7 @@ jobs:
           echo "Python compilation PASS."
 
       # ============================================================
-      # INSTALL FORTRAN TOOLCHAIN
+      # INSTALL FORTRAN BUILD TOOLS
       # ============================================================
 
       - name: Install Fortran build toolchain
@@ -512,7 +503,7 @@ jobs:
           git --version
 
       # ============================================================
-      # FETCH CAMB FORUTILS DEPENDENCY
+      # FETCH FORUTILS
       # ============================================================
 
       - name: Fetch forutils
@@ -534,20 +525,21 @@ jobs:
           echo "forutils checkout PASS."
 
       # ============================================================
-      # RESTORE REQUIRED CAMB SOURCE IF MISSING
+      # TEMPORARILY RESTORE RUNGEKUTTADP45 IF NEEDED
       # ============================================================
 
-      - name: Restore RungeKuttaDP45 if required
+      - name: Restore RungeKuttaDP45 temporarily if required
         run: |
           set -euo pipefail
 
           cd "$GITHUB_WORKSPACE"
 
-          if [ ! -s RungeKuttaDP45.f90 ]; then
-
-            echo "RungeKuttaDP45.f90 missing."
-
-            echo "Restoring CAMB 2.0.1 source."
+          if [ -s RungeKuttaDP45.f90 ]; then
+            echo "RUNGEKUTTA_TEMPORARY=false" >> "$GITHUB_ENV"
+            echo "RungeKuttaDP45.f90 already present."
+          else
+            echo "RungeKuttaDP45.f90 is absent."
+            echo "Downloading temporary CAMB 2.0.1 copy for build validation."
 
             curl \
               --fail \
@@ -555,10 +547,7 @@ jobs:
               https://raw.githubusercontent.com/cmbant/CAMB/2.0.1/fortran/RungeKuttaDP45.f90 \
               --output RungeKuttaDP45.f90
 
-          else
-
-            echo "RungeKuttaDP45.f90 already present."
-
+            echo "RUNGEKUTTA_TEMPORARY=true" >> "$GITHUB_ENV"
           fi
 
           if [ ! -s RungeKuttaDP45.f90 ]; then
@@ -566,10 +555,10 @@ jobs:
             exit 1
           fi
 
-          echo "RungeKuttaDP45 check PASS."
+          echo "RungeKuttaDP45 build-source check PASS."
 
       # ============================================================
-      # PREPARE CLEAN TEMPORARY CAMB BUILD DIRECTORIES
+      # PREPARE TEMP CAMB BUILD DIRECTORIES
       # ============================================================
 
       - name: Prepare CAMB build directories
@@ -600,7 +589,7 @@ jobs:
           echo "PYCAMB_OUTPUT_DIR=$PYCAMB_OUTPUT_DIR"
 
       # ============================================================
-      # FULL CAMB FORTRAN BUILD
+      # FULL CAMB BUILD
       # ============================================================
 
       - name: Build full CAMB Fortran library
@@ -610,7 +599,7 @@ jobs:
           cd "$GITHUB_WORKSPACE"
 
           echo "========================================"
-          echo "BUILDING CAMB"
+          echo "BUILDING FULL CAMB FORTRAN LIBRARY"
           echo "========================================"
 
           make python \
@@ -626,7 +615,7 @@ jobs:
           fi
 
           echo
-          echo "CAMB shared library:"
+          echo "CAMB output:"
 
           ls -lh "$output"
 
@@ -637,32 +626,50 @@ jobs:
           echo "========================================"
 
       # ============================================================
-      # MAKE SURE CLEANUP DID NOT ACCIDENTALLY MODIFY SOURCE
-      # AFTER THE CLEANUP COMMIT
+      # REMOVE TEMPORARY BUILD SOURCE
       # ============================================================
 
-      - name: Verify validation did not modify tracked source
+      - name: Remove temporary RungeKuttaDP45 source
+        if: always()
         run: |
           set -euo pipefail
 
           cd "$GITHUB_WORKSPACE"
 
-          if [ -n "$(git status --porcelain)" ]; then
-
-            echo "========================================"
-            echo "ERROR: VALIDATION MODIFIED THE WORKTREE"
-            echo "========================================"
-
-            git status --short
-
-            exit 1
-
+          if [ "${RUNGEKUTTA_TEMPORARY:-false}" = "true" ]; then
+            rm -f RungeKuttaDP45.f90
+            echo "Removed temporary RungeKuttaDP45.f90."
+          else
+            echo "No temporary RungeKuttaDP45 source to remove."
           fi
 
-          echo "Validation left the committed cleanup tree unchanged."
+      # ============================================================
+      # FINAL WORKTREE SAFETY CHECK
+      # ============================================================
+
+      - name: Verify validation did not alter cleanup commit
+        run: |
+          set -euo pipefail
+
+          cd "$GITHUB_WORKSPACE"
+
+          echo "========================================"
+          echo "FINAL GIT STATUS"
+          echo "========================================"
+
+          git status --short
+
+          if [ -n "$(git status --porcelain)" ]; then
+            echo
+            echo "ERROR: validation/build created unexpected repository changes."
+            exit 1
+          fi
+
+          echo
+          echo "Validation left the cleanup commit unchanged."
 
       # ============================================================
-      # PUSH ONLY AFTER EVERYTHING PASSES
+      # PUSH ONLY AFTER ALL VALIDATION PASSES
       # ============================================================
 
       - name: Push validated cleanup branch
@@ -684,7 +691,7 @@ jobs:
           echo "$CLEANUP_BRANCH"
 
       # ============================================================
-      # FINAL RESULT
+      # FINAL SUMMARY
       # ============================================================
 
       - name: Final cleanup summary
@@ -693,22 +700,22 @@ jobs:
           echo "REPOSITORY CLEANUP VALIDATION COMPLETE"
           echo "========================================"
 
-          echo "Workflow version:"
-          echo "$WORKFLOW_VERSION"
+          echo "Workflow version: $WORKFLOW_VERSION"
 
           echo
-          echo "Obsolete validation workflow: REMOVED"
-          echo "Critical build files: PRESERVED"
+          echo "Obsolete validate workflow: REMOVED"
+          echo "Critical repository files: PRESERVED"
           echo "Locked Saturation imports: PASS"
           echo "Locked Saturation tests: PASS"
           echo "Python compilation: PASS"
           echo "CAMB Fortran build: PASS"
+          echo "Temporary build files: REMOVED"
 
           if [ "${{ steps.cleanup_commit.outputs.changed }}" = "true" ]; then
             echo "Cleanup branch: PUSHED"
             echo "$CLEANUP_BRANCH"
           else
-            echo "Cleanup branch: NO NEW CLEANUP CHANGES"
+            echo "Cleanup branch: NO CHANGES REQUIRED"
           fi
 
           echo "========================================"
