@@ -1,3 +1,0 @@
-Triggering node-scan workflow run (user requested).
-
-This file is only to create a commit on fix/update-node-version to trigger the node-scan workflow. You can safely remove it after the workflow run completes.
