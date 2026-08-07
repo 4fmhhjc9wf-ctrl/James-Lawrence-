@@ -19,17 +19,29 @@ jobs:
       - name: Install build toolchain
         run: |
           set -euo pipefail
+
           sudo apt-get update
           sudo apt-get install -y gfortran make git curl
+
+          echo "=== COMPILER ==="
           gfortran --version
+
+          echo "=== MAKE ==="
           make --version
 
       - name: Fetch forutils
         run: |
           set -euo pipefail
+
           rm -rf ../forutils
-          git clone --depth=1 https://github.com/cmbant/forutils.git ../forutils
+
+          git clone \
+            --depth=1 \
+            https://github.com/cmbant/forutils.git \
+            ../forutils
+
           test -s ../forutils/Makefile
+
           echo "FORUTILS CHECKOUT PASS"
 
       - name: Audit and restore required CAMB 2.0.1 sources
@@ -74,6 +86,10 @@ jobs:
 
           missing=()
 
+          echo "========================================"
+          echo "CAMB REQUIRED SOURCE AUDIT"
+          echo "========================================"
+
           for f in "${required_files[@]}"; do
             if [ -s "$f" ]; then
               echo "PRESENT  $f"
@@ -83,11 +99,13 @@ jobs:
             fi
           done
 
+          echo
           echo "Required source files: ${#required_files[@]}"
           echo "Missing source files: ${#missing[@]}"
 
           for f in "${missing[@]}"; do
             url="https://raw.githubusercontent.com/cmbant/CAMB/2.0.1/fortran/$f"
+
             echo "Restoring $f from official CAMB 2.0.1"
 
             curl \
@@ -99,7 +117,12 @@ jobs:
               --output "$f"
 
             test -s "$f"
+
+            echo "RESTORED  $f"
           done
+
+          echo
+          echo "=== FINAL SOURCE CHECK ==="
 
           for f in "${required_files[@]}"; do
             if [ ! -s "$f" ]; then
@@ -113,18 +136,65 @@ jobs:
       - name: Verify locked saturation include
         run: |
           set -euo pipefail
+
           test -s sat_locked_background.inc
-          grep -n "sat_locked_background.inc" equations.f90
+
+          if ! grep -n "sat_locked_background.inc" equations.f90; then
+            echo "equations.f90 does not reference sat_locked_background.inc"
+            exit 1
+          fi
+
           echo "LOCKED SATURATION INCLUDE PASS"
 
       - name: Verify build configuration
         run: |
           set -euo pipefail
+
           test -s Makefile
           test -s Makefile_main
           test -s ../forutils/Makefile
-          grep -q "RungeKuttaDP45" Makefile_main
+
+          if ! grep -q "RungeKuttaDP45" Makefile_main; then
+            echo "RungeKuttaDP45 is not listed in Makefile_main"
+            exit 1
+          fi
+
           echo "BUILD CONFIGURATION CHECK PASS"
+
+      - name: Prepare complete build directory tree
+        env:
+          CAMB_BUILD_DIR: ${{ runner.temp }}/camb-build
+          PYCAMB_OUTPUT_DIR: ${{ runner.temp }}/pycamb-output
+        run: |
+          set -euo pipefail
+
+          rm -rf "$CAMB_BUILD_DIR"
+          rm -rf "$PYCAMB_OUTPUT_DIR"
+
+          mkdir -p "$CAMB_BUILD_DIR"
+          mkdir -p "$CAMB_BUILD_DIR/forutils"
+          mkdir -p "$CAMB_BUILD_DIR/forutils/Releaselib"
+          mkdir -p "$CAMB_BUILD_DIR/forutils/Debuglib"
+          mkdir -p "$CAMB_BUILD_DIR/Releaselib"
+          mkdir -p "$CAMB_BUILD_DIR/Debuglib"
+          mkdir -p "$PYCAMB_OUTPUT_DIR"
+
+          echo "=== BUILD DIRECTORY TREE ==="
+
+          find "$CAMB_BUILD_DIR" \
+            -maxdepth 3 \
+            -type d \
+            -print
+
+          echo
+          echo "CAMB_BUILD_DIR=$CAMB_BUILD_DIR"
+          echo "PYCAMB_OUTPUT_DIR=$PYCAMB_OUTPUT_DIR"
+
+          test -d "$CAMB_BUILD_DIR/forutils/Releaselib"
+          test -d "$CAMB_BUILD_DIR/forutils/Debuglib"
+          test -d "$PYCAMB_OUTPUT_DIR"
+
+          echo "BUILD DIRECTORY PREPARATION PASS"
 
       - name: Dry-run Make dependency resolution
         env:
@@ -134,7 +204,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          mkdir -p "$CAMB_BUILD_DIR" "$PYCAMB_OUTPUT_DIR"
+          echo "=== MAKE DRY RUN ==="
 
           make -n python \
             FORUTILSPATH="$FORUTILSPATH" \
@@ -144,6 +214,10 @@ jobs:
 
           test -s /tmp/camb-make-dry-run.txt
 
+          echo "=== FIRST 100 LINES OF DRY RUN ==="
+          head -100 /tmp/camb-make-dry-run.txt
+
+          echo
           echo "MAKE DEPENDENCY RESOLUTION PASS"
 
       - name: Build recovered Fortran library
@@ -154,13 +228,28 @@ jobs:
         run: |
           set -euo pipefail
 
-          rm -rf "$CAMB_BUILD_DIR" "$PYCAMB_OUTPUT_DIR"
-          mkdir -p "$CAMB_BUILD_DIR" "$PYCAMB_OUTPUT_DIR"
+          mkdir -p "$CAMB_BUILD_DIR"
+          mkdir -p "$CAMB_BUILD_DIR/forutils/Releaselib"
+          mkdir -p "$CAMB_BUILD_DIR/forutils/Debuglib"
+          mkdir -p "$CAMB_BUILD_DIR/Releaselib"
+          mkdir -p "$CAMB_BUILD_DIR/Debuglib"
+          mkdir -p "$PYCAMB_OUTPUT_DIR"
+
+          echo "========================================"
+          echo "STARTING FULL CAMB FORTRAN BUILD"
+          echo "========================================"
+
+          echo "FORUTILSPATH=$FORUTILSPATH"
+          echo "CAMB_BUILD_DIR=$CAMB_BUILD_DIR"
+          echo "PYCAMB_OUTPUT_DIR=$PYCAMB_OUTPUT_DIR"
 
           make python \
             FORUTILSPATH="$FORUTILSPATH" \
             CAMB_BUILD_DIR="$CAMB_BUILD_DIR" \
             PYCAMB_OUTPUT_DIR="$PYCAMB_OUTPUT_DIR"
+
+          echo
+          echo "MAKE COMMAND COMPLETED"
 
       - name: Verify compiled library
         env:
@@ -168,23 +257,48 @@ jobs:
         run: |
           set -euo pipefail
 
+          echo "========================================"
+          echo "VERIFYING COMPILED LIBRARY"
+          echo "========================================"
+
           library="$PYCAMB_OUTPUT_DIR/camblib.so"
 
           if [ ! -s "$library" ]; then
-            echo "Expected library was not produced: $library"
+            echo "Expected camblib.so was not produced at:"
+            echo "$library"
+
+            echo
+            echo "Searching runner for camblib.so..."
 
             find \
               "${{ runner.temp }}" \
               "${{ github.workspace }}" \
               -type f \
-              -name 'camblib.so' \
+              -name "camblib.so" \
+              -print \
+              2>/dev/null || true
+
+            echo
+            echo "Contents of Python output directory:"
+
+            find \
+              "$PYCAMB_OUTPUT_DIR" \
+              -maxdepth 2 \
+              -type f \
               -print \
               2>/dev/null || true
 
             exit 1
           fi
 
+          echo "FOUND:"
           ls -lh "$library"
+
+          echo
+          echo "FILE TYPE:"
           file "$library"
 
+          echo
+          echo "========================================"
           echo "FULL FORTRAN BUILD PASS"
+          echo "========================================"
