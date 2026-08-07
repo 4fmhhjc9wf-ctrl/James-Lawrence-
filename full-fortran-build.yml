@@ -1,0 +1,48 @@
+name: Full CAMB Fortran build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/full-fortran-build.yml"
+
+jobs:
+  full-fortran-build:
+    name: Full recovered Fortran build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gfortran make git
+          gfortran --version
+          make --version
+
+      - name: Fetch forutils
+        run: |
+          git clone --depth=1 https://github.com/cmbant/forutils.git ../forutils
+          test -f ../forutils/Makefile
+
+      - name: Build recovered Fortran library
+        env:
+          FORUTILSPATH: ${{ github.workspace }}/../forutils
+          CAMB_BUILD_DIR: ${{ runner.temp }}/camb-build
+        run: |
+          mkdir -p "${{ runner.temp }}/pycamb-output"
+
+          make python \
+            FORUTILSPATH="$FORUTILSPATH" \
+            CAMB_BUILD_DIR="$CAMB_BUILD_DIR" \
+            PYCAMB_OUTPUT_DIR="${{ runner.temp }}/pycamb-output"
+
+      - name: Verify compiled library
+        run: |
+          test -f "${{ runner.temp }}/pycamb-output/camblib.so"
+          ls -lh "${{ runner.temp }}/pycamb-output/camblib.so"
+          file "${{ runner.temp }}/pycamb-output/camblib.so"
+          echo "FULL FORTRAN BUILD PASS"
