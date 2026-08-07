@@ -1,4 +1,4 @@
-name: Repository cleanup and validation
+name: AUTHORITATIVE Repository Cleanup - v7
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   cleanup:
-    name: Clean repository safely
+    name: Run authoritative repository cleanup
     runs-on: ubuntu-latest
 
     env:
@@ -19,10 +19,6 @@ jobs:
       PYCAMB_OUTPUT_DIR: ${{ runner.temp }}/pycamb-output
 
     steps:
-      # ============================================================
-      # CHECKOUT
-      # ============================================================
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -33,16 +29,12 @@ jobs:
           set -euo pipefail
 
           echo "========================================"
-          echo "REPOSITORY CLEANUP WORKFLOW"
+          echo "AUTHORITATIVE REPOSITORY CLEANUP"
           echo "VERSION: $WORKFLOW_VERSION"
           echo "COMMIT: $GITHUB_SHA"
           echo "REF: $GITHUB_REF"
           echo "RUN: $GITHUB_RUN_ID"
           echo "========================================"
-
-      # ============================================================
-      # SAFE CLEANUP BRANCH
-      # ============================================================
 
       - name: Configure Git and create cleanup branch
         run: |
@@ -59,10 +51,6 @@ jobs:
 
           echo "Cleanup branch created:"
           echo "$branch"
-
-      # ============================================================
-      # REMOVE THE OBSOLETE DUPLICATE WORKFLOW
-      # ============================================================
 
       - name: Remove obsolete Locked Saturation validation workflow
         run: |
@@ -82,10 +70,6 @@ jobs:
             echo "$obsolete"
           fi
 
-      # ============================================================
-      # CREATE CLEAN DIRECTORY STRUCTURE
-      # ============================================================
-
       - name: Create cleanup directories
         run: |
           set -euo pipefail
@@ -100,10 +84,6 @@ jobs:
 
           echo "Cleanup directories ready."
 
-      # ============================================================
-      # MOVE DATED RESEARCH NOTES
-      # ============================================================
-
       - name: Move dated research notes
         shell: bash
         run: |
@@ -115,10 +95,6 @@ jobs:
             echo "Moved: $f"
           done
 
-      # ============================================================
-      # MOVE NOTEBOOKS
-      # ============================================================
-
       - name: Move notebooks
         shell: bash
         run: |
@@ -129,10 +105,6 @@ jobs:
             git mv "$f" notebooks/
             echo "Moved: $f"
           done
-
-      # ============================================================
-      # MOVE REVIEWER DOCUMENTS
-      # ============================================================
 
       - name: Move reviewer documents
         shell: bash
@@ -155,10 +127,6 @@ jobs:
             fi
           done
 
-      # ============================================================
-      # MOVE REMAINING ROOT REPORTS
-      # ============================================================
-
       - name: Move remaining root PDFs and TEX files
         shell: bash
         run: |
@@ -174,10 +142,6 @@ jobs:
             git mv "$f" docs/reports/
             echo "Moved TEX source: $f"
           done
-
-      # ============================================================
-      # MOVE GENERATED RESULTS
-      # ============================================================
 
       - name: Move generated result files
         shell: bash
@@ -199,10 +163,6 @@ jobs:
             echo "Moved generated result: $f"
           done
 
-      # ============================================================
-      # ARCHIVE OBVIOUS DUPLICATES
-      # ============================================================
-
       - name: Archive obvious duplicate files
         shell: bash
         run: |
@@ -222,10 +182,6 @@ jobs:
 
             echo "Archived duplicate: $f"
           done
-
-      # ============================================================
-      # PROTECT BUILD / MODEL FILES
-      # ============================================================
 
       - name: Verify build-critical files
         run: |
@@ -263,10 +219,6 @@ jobs:
           echo "CRITICAL-FILE SAFETY CHECK PASS"
           echo "========================================"
 
-      # ============================================================
-      # MAKE SURE BAD WORKFLOW IS GONE
-      # ============================================================
-
       - name: Verify obsolete workflow removal
         run: |
           set -euo pipefail
@@ -280,10 +232,6 @@ jobs:
           fi
 
           echo "Obsolete workflow removal PASS."
-
-      # ============================================================
-      # REVIEW CLEANUP
-      # ============================================================
 
       - name: Review cleanup
         run: |
@@ -301,10 +249,6 @@ jobs:
           echo "========================================"
 
           git diff --stat
-
-      # ============================================================
-      # COMMIT CLEANUP LOCALLY FIRST
-      # ============================================================
 
       - name: Commit cleanup locally
         id: cleanup_commit
@@ -325,10 +269,6 @@ jobs:
             echo "Cleanup commit created locally."
           fi
 
-      # ============================================================
-      # PYTHON SETUP
-      # ============================================================
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -342,10 +282,6 @@ jobs:
           python -m pip install pytest numpy
 
           echo "Python validation dependencies installed."
-
-      # ============================================================
-      # VERIFY LOCKED SATURATION PACKAGE
-      # ============================================================
 
       - name: Verify Locked Saturation imports
         run: |
@@ -397,11 +333,6 @@ jobs:
           print("Locked arithmetic execution PASS")
           print("Locked Saturation imports PASS")
           PY
-
-      # ============================================================
-      # ISOLATED PYTEST
-      # THIS PREVENTS CAMB ROOT __init__.py FROM BEING COLLECTED
-      # ============================================================
 
       - name: Run Locked Saturation tests in isolated directory
         run: |
@@ -458,10 +389,6 @@ jobs:
           echo "LOCKED SATURATION TESTS PASS"
           echo "========================================"
 
-      # ============================================================
-      # COMPILE PYTHON SOURCES
-      # ============================================================
-
       - name: Compile Locked Saturation Python sources
         run: |
           set -euo pipefail
@@ -477,10 +404,6 @@ jobs:
             test_locked_arithmetic.py
 
           echo "Python compilation PASS."
-
-      # ============================================================
-      # INSTALL FORTRAN BUILD TOOLS
-      # ============================================================
 
       - name: Install Fortran build toolchain
         run: |
@@ -502,10 +425,6 @@ jobs:
           make --version
           git --version
 
-      # ============================================================
-      # FETCH FORUTILS
-      # ============================================================
-
       - name: Fetch forutils
         run: |
           set -euo pipefail
@@ -523,10 +442,6 @@ jobs:
           fi
 
           echo "forutils checkout PASS."
-
-      # ============================================================
-      # TEMPORARILY RESTORE RUNGEKUTTADP45 IF NEEDED
-      # ============================================================
 
       - name: Restore RungeKuttaDP45 temporarily if required
         run: |
@@ -557,10 +472,6 @@ jobs:
 
           echo "RungeKuttaDP45 build-source check PASS."
 
-      # ============================================================
-      # PREPARE TEMP CAMB BUILD DIRECTORIES
-      # ============================================================
-
       - name: Prepare CAMB build directories
         run: |
           set -euo pipefail
@@ -587,10 +498,6 @@ jobs:
           echo "FORUTILSPATH=$FORUTILSPATH"
           echo "CAMB_BUILD_DIR=$CAMB_BUILD_DIR"
           echo "PYCAMB_OUTPUT_DIR=$PYCAMB_OUTPUT_DIR"
-
-      # ============================================================
-      # FULL CAMB BUILD
-      # ============================================================
 
       - name: Build full CAMB Fortran library
         run: |
@@ -625,10 +532,6 @@ jobs:
           echo "FULL CAMB FORTRAN BUILD PASS"
           echo "========================================"
 
-      # ============================================================
-      # REMOVE TEMPORARY BUILD SOURCE
-      # ============================================================
-
       - name: Remove temporary RungeKuttaDP45 source
         if: always()
         run: |
@@ -642,10 +545,6 @@ jobs:
           else
             echo "No temporary RungeKuttaDP45 source to remove."
           fi
-
-      # ============================================================
-      # FINAL WORKTREE SAFETY CHECK
-      # ============================================================
 
       - name: Verify validation did not alter cleanup commit
         run: |
@@ -668,10 +567,6 @@ jobs:
           echo
           echo "Validation left the cleanup commit unchanged."
 
-      # ============================================================
-      # PUSH ONLY AFTER ALL VALIDATION PASSES
-      # ============================================================
-
       - name: Push validated cleanup branch
         if: steps.cleanup_commit.outputs.changed == 'true'
         run: |
@@ -690,14 +585,10 @@ jobs:
 
           echo "$CLEANUP_BRANCH"
 
-      # ============================================================
-      # FINAL SUMMARY
-      # ============================================================
-
       - name: Final cleanup summary
         run: |
           echo "========================================"
-          echo "REPOSITORY CLEANUP VALIDATION COMPLETE"
+          echo "AUTHORITATIVE REPOSITORY CLEANUP COMPLETE"
           echo "========================================"
 
           echo "Workflow version: $WORKFLOW_VERSION"
