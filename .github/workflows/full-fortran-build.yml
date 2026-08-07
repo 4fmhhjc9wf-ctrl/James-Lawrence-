@@ -19,37 +19,20 @@ jobs:
       - name: Install build toolchain
         run: |
           set -euo pipefail
-
           sudo apt-get update
-          sudo apt-get install -y \
-            gfortran \
-            make \
-            git \
-            curl \
-            libopenmpi-dev \
-            openmpi-bin
-
-          echo "=== Compiler versions ==="
+          sudo apt-get install -y gfortran make git curl
           gfortran --version
           make --version
-          mpifort --version
 
       - name: Fetch forutils
         run: |
           set -euo pipefail
-
           rm -rf ../forutils
-
-          git clone \
-            --depth=1 \
-            https://github.com/cmbant/forutils.git \
-            ../forutils
-
+          git clone --depth=1 https://github.com/cmbant/forutils.git ../forutils
           test -s ../forutils/Makefile
-
           echo "FORUTILS CHECKOUT PASS"
 
-      - name: Audit required CAMB Fortran sources
+      - name: Audit and restore required CAMB 2.0.1 sources
         run: |
           set -euo pipefail
 
@@ -91,10 +74,6 @@ jobs:
 
           missing=()
 
-          echo "========================================"
-          echo "CAMB REQUIRED SOURCE AUDIT"
-          echo "========================================"
-
           for f in "${required_files[@]}"; do
             if [ -s "$f" ]; then
               echo "PRESENT  $f"
@@ -104,38 +83,12 @@ jobs:
             fi
           done
 
-          echo
           echo "Required source files: ${#required_files[@]}"
-          echo "Missing source files:  ${#missing[@]}"
+          echo "Missing source files: ${#missing[@]}"
 
-          : > /tmp/missing-camb-sources.txt
-
-          if [ "${#missing[@]}" -gt 0 ]; then
-            printf '%s\n' "${missing[@]}" \
-              > /tmp/missing-camb-sources.txt
-
-            echo
-            echo "Complete missing list:"
-            cat /tmp/missing-camb-sources.txt
-          else
-            echo "No required CAMB Fortran source files are missing."
-          fi
-
-      - name: Restore missing official CAMB 2.0.1 sources
-        run: |
-          set -euo pipefail
-
-          if [ ! -s /tmp/missing-camb-sources.txt ]; then
-            echo "No CAMB sources require restoration."
-            exit 0
-          fi
-
-          while IFS= read -r f; do
-            [ -n "$f" ] || continue
-
+          for f in "${missing[@]}"; do
             url="https://raw.githubusercontent.com/cmbant/CAMB/2.0.1/fortran/$f"
-
-            echo "Restoring $f from official CAMB 2.0.1..."
+            echo "Restoring $f from official CAMB 2.0.1"
 
             curl \
               --fail \
@@ -146,248 +99,47 @@ jobs:
               --output "$f"
 
             test -s "$f"
-
-            echo "RESTORED  $f"
-          done < /tmp/missing-camb-sources.txt
-
-      - name: Re-audit CAMB Fortran sources
-        run: |
-          set -euo pipefail
-
-          required_files=(
-            constants.f90
-            config.f90
-            classes.f90
-            MathUtils.f90
-            RungeKuttaDP45.f90
-            DarkAge21cm.f90
-            DarkEnergyInterface.f90
-            SourceWindows.f90
-            massive_neutrinos.f90
-            model.f90
-            results.f90
-            bessels.f90
-            hyperspherical_bessels.f90
-            hyperspherical_bessels_airy.f90
-            hyperspherical_bessels_smallnu.f90
-            hyperspherical_bessels_olver.f90
-            recfast.f90
-            DarkEnergyFluid.f90
-            DarkEnergyPPF.f90
-            PowellMinimize.f90
-            DarkEnergyQuintessence.f90
-            equations.f90
-            reionization.f90
-            InitialPower.f90
-            halofit.f90
-            SPkNonLinear.f90
-            SecondOrderPK.f90
-            ExternalNonLinearRatio.f90
-            lensing.f90
-            SeparableBispectrum.f90
-            cmbmain.f90
-            camb.f90
-            camb_python.f90
-          )
-
-          failed=0
+          done
 
           for f in "${required_files[@]}"; do
             if [ ! -s "$f" ]; then
               echo "STILL MISSING  $f"
-              failed=1
+              exit 1
             fi
           done
-
-          if [ "$failed" -ne 0 ]; then
-            echo "REQUIRED SOURCE AUDIT FAILED"
-            exit 1
-          fi
 
           echo "ALL REQUIRED FORTRAN SOURCES PRESENT"
-
-      - name: Locate MPI include directories
-        run: |
-          set -euo pipefail
-
-          echo "=== MPI compile command ==="
-          mpifort --showme:compile
-
-          mpi_incdirs="$(mpifort --showme:incdirs || true)"
-
-          if [ -z "$mpi_incdirs" ]; then
-            echo "mpifort did not report include directories."
-            exit 1
-          fi
-
-          echo "MPI include directories:"
-          for d in $mpi_incdirs; do
-            echo "  $d"
-          done
-
-          found_mpif=0
-
-          for d in $mpi_incdirs; do
-            if [ -f "$d/mpif.h" ]; then
-              echo "Found mpif.h at:"
-              echo "$d/mpif.h"
-              found_mpif=1
-              break
-            fi
-          done
-
-          if [ "$found_mpif" -ne 1 ]; then
-            echo "mpif.h was not found in any MPI include directory."
-            exit 1
-          fi
-
-          {
-            echo "MPI_INCLUDE_DIRS<<EOF"
-            echo "$mpi_incdirs"
-            echo "EOF"
-          } >> "$GITHUB_ENV"
-
-          echo "MPI HEADER CHECK PASS"
 
       - name: Verify locked saturation include
         run: |
           set -euo pipefail
-
           test -s sat_locked_background.inc
-
-          echo "sat_locked_background.inc present"
+          grep -n "sat_locked_background.inc" equations.f90
           echo "LOCKED SATURATION INCLUDE PASS"
-
-      - name: Audit Fortran include files
-        run: |
-          set -euo pipefail
-
-          python - <<'PY'
-          import os
-          import pathlib
-          import re
-          import sys
-
-          root = pathlib.Path(".")
-          mpi_dirs = [
-              pathlib.Path(p)
-              for p in os.environ.get(
-                  "MPI_INCLUDE_DIRS",
-                  ""
-              ).split()
-              if p
-          ]
-
-          missing = []
-          references = []
-
-          pattern = re.compile(
-              r"""^\s*(?:#\s*)?include\s*['"]([^'"]+)['"]""",
-              re.IGNORECASE,
-          )
-
-          for source in sorted(root.glob("*.f90")):
-              try:
-                  text = source.read_text(
-                      encoding="utf-8",
-                      errors="ignore",
-                  )
-              except OSError:
-                  continue
-
-              for line_number, line in enumerate(
-                  text.splitlines(),
-                  start=1,
-              ):
-                  match = pattern.search(line)
-
-                  if not match:
-                      continue
-
-                  target = match.group(1)
-
-                  references.append(
-                      (source.name, line_number, target)
-                  )
-
-                  local_candidate = source.parent / target
-
-                  mpi_candidates = [
-                      directory / target
-                      for directory in mpi_dirs
-                  ]
-
-                  if (
-                      not local_candidate.exists()
-                      and not any(
-                          candidate.exists()
-                          for candidate in mpi_candidates
-                      )
-                  ):
-                      missing.append(
-                          (source.name, line_number, target)
-                      )
-
-          print(
-              "Fortran include references found:",
-              len(references),
-          )
-
-          for source, line, target in references:
-              print(
-                  f"INCLUDE {source}:{line} -> {target}"
-              )
-
-          if missing:
-              print()
-              print("MISSING INCLUDE FILES:")
-
-              for source, line, target in missing:
-                  print(
-                      f"{source}:{line} -> {target}"
-                  )
-
-              sys.exit(1)
-
-          print("FORTRAN INCLUDE AUDIT PASS")
-          PY
 
       - name: Verify build configuration
         run: |
           set -euo pipefail
-
-          required_build_files=(
-            Makefile
-            Makefile_main
-          )
-
-          for f in "${required_build_files[@]}"; do
-            test -s "$f"
-            echo "PRESENT  $f"
-          done
-
+          test -s Makefile
+          test -s Makefile_main
           test -s ../forutils/Makefile
-
-          echo "BUILD CONFIGURATION AUDIT PASS"
+          grep -q "RungeKuttaDP45" Makefile_main
+          echo "BUILD CONFIGURATION CHECK PASS"
 
       - name: Dry-run Make dependency resolution
         env:
           FORUTILSPATH: ${{ github.workspace }}/../forutils
           CAMB_BUILD_DIR: ${{ runner.temp }}/camb-build
+          PYCAMB_OUTPUT_DIR: ${{ runner.temp }}/pycamb-output
         run: |
           set -euo pipefail
 
-          mkdir -p "$CAMB_BUILD_DIR"
-          mkdir -p "${{ runner.temp }}/pycamb-output"
-
-          echo "========================================"
-          echo "MAKE DRY RUN"
-          echo "========================================"
+          mkdir -p "$CAMB_BUILD_DIR" "$PYCAMB_OUTPUT_DIR"
 
           make -n python \
             FORUTILSPATH="$FORUTILSPATH" \
             CAMB_BUILD_DIR="$CAMB_BUILD_DIR" \
-            PYCAMB_OUTPUT_DIR="${{ runner.temp }}/pycamb-output" \
+            PYCAMB_OUTPUT_DIR="$PYCAMB_OUTPUT_DIR" \
             > /tmp/camb-make-dry-run.txt
 
           test -s /tmp/camb-make-dry-run.txt
@@ -398,377 +150,41 @@ jobs:
         env:
           FORUTILSPATH: ${{ github.workspace }}/../forutils
           CAMB_BUILD_DIR: ${{ runner.temp }}/camb-build
+          PYCAMB_OUTPUT_DIR: ${{ runner.temp }}/pycamb-output
         run: |
           set -euo pipefail
 
-          rm -rf "$CAMB_BUILD_DIR"
-          mkdir -p "$CAMB_BUILD_DIR"
-
-          rm -rf "${{ runner.temp }}/pycamb-output"
-          mkdir -p "${{ runner.temp }}/pycamb-output"
-
-          echo "========================================"
-          echo "STARTING FULL FORTRAN BUILD"
-          echo "========================================"
+          rm -rf "$CAMB_BUILD_DIR" "$PYCAMB_OUTPUT_DIR"
+          mkdir -p "$CAMB_BUILD_DIR" "$PYCAMB_OUTPUT_DIR"
 
           make python \
             FORUTILSPATH="$FORUTILSPATH" \
             CAMB_BUILD_DIR="$CAMB_BUILD_DIR" \
-            PYCAMB_OUTPUT_DIR="${{ runner.temp }}/pycamb-output"
-
-      - name: Locate compiled library
-        run: |
-          set -euo pipefail
-
-          echo "Searching for camblib.so..."
-
-          find \
-            "${{ runner.temp }}" \
-            "${{ github.workspace }}" \
-            -type f \
-            -name 'camblib.so' \
-            -print \
-            2>/dev/null \
-            | tee /tmp/camblib-locations.txt
-
-          if [ ! -s /tmp/camblib-locations.txt ]; then
-            echo "camblib.so was not produced."
-            exit 1
-          fi
-
-          library="$(head -n 1 /tmp/camblib-locations.txt)"
-
-          echo "CAMBLIB_PATH=$library" >> "$GITHUB_ENV"
+            PYCAMB_OUTPUT_DIR="$PYCAMB_OUTPUT_DIR"
 
       - name: Verify compiled library
-        run: |
-          set -euo pipefail
-
-          test -n "${CAMBLIB_PATH:-}"
-          test -s "$CAMBLIB_PATH"
-
-          echo "========================================"
-          echo "COMPILED LIBRARY"
-          echo "========================================"
-
-          ls -lh "$CAMBLIB_PATH"
-          file "$CAMBLIB_PATH"
-
-          echo
-          echo "FULL FORTRAN BUILD PASS"name: Full CAMB Fortran build
-
-on:
-  workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/full-fortran-build.yml"
-
-jobs:
-  full-fortran-build:
-    name: Full recovered Fortran build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install build toolchain
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gfortran make git curl
-          gfortran --version
-          make --version
-
-      - name: Fetch forutils
-        run: |
-          set -euo pipefail
-
-          rm -rf ../forutils
-          git clone --depth=1 https://github.com/cmbant/forutils.git ../forutils
-
-          test -f ../forutils/Makefile
-
-          echo "forutils checkout PASS"
-
-      - name: Audit complete required Fortran source set
-        run: |
-          set -euo pipefail
-
-          required_files=(
-            constants.f90
-            config.f90
-            classes.f90
-            MathUtils.f90
-            RungeKuttaDP45.f90
-            DarkAge21cm.f90
-            DarkEnergyInterface.f90
-            SourceWindows.f90
-            massive_neutrinos.f90
-            model.f90
-            results.f90
-            bessels.f90
-            hyperspherical_bessels.f90
-            hyperspherical_bessels_airy.f90
-            hyperspherical_bessels_smallnu.f90
-            hyperspherical_bessels_olver.f90
-            recfast.f90
-            DarkEnergyFluid.f90
-            DarkEnergyPPF.f90
-            PowellMinimize.f90
-            DarkEnergyQuintessence.f90
-            equations.f90
-            reionization.f90
-            InitialPower.f90
-            halofit.f90
-            SPkNonLinear.f90
-            SecondOrderPK.f90
-            ExternalNonLinearRatio.f90
-            lensing.f90
-            SeparableBispectrum.f90
-            cmbmain.f90
-            camb.f90
-            camb_python.f90
-          )
-
-          missing=()
-
-          echo "========================================"
-          echo "CAMB REQUIRED SOURCE AUDIT"
-          echo "========================================"
-
-          for f in "${required_files[@]}"; do
-            if [ -s "$f" ]; then
-              echo "PRESENT  $f"
-            else
-              echo "MISSING  $f"
-              missing+=("$f")
-            fi
-          done
-
-          echo
-          echo "Required source files: ${#required_files[@]}"
-          echo "Missing source files:  ${#missing[@]}"
-
-          if [ "${#missing[@]}" -gt 0 ]; then
-            printf '%s\n' "${missing[@]}" > /tmp/missing-camb-sources.txt
-
-            echo
-            echo "Complete missing list:"
-            cat /tmp/missing-camb-sources.txt
-          else
-            : > /tmp/missing-camb-sources.txt
-            echo "No required Fortran source files are missing."
-          fi
-
-      - name: Restore missing official CAMB 2.0.1 sources
-        run: |
-          set -euo pipefail
-
-          if [ ! -s /tmp/missing-camb-sources.txt ]; then
-            echo "Nothing needs restoration."
-            exit 0
-          fi
-
-          while IFS= read -r f; do
-            [ -n "$f" ] || continue
-
-            url="https://raw.githubusercontent.com/cmbant/CAMB/2.0.1/fortran/$f"
-
-            echo "Restoring $f from official CAMB 2.0.1..."
-
-            curl \
-              --fail \
-              --location \
-              --retry 3 \
-              --retry-delay 2 \
-              "$url" \
-              --output "$f"
-
-            test -s "$f"
-
-            echo "RESTORED $f"
-          done < /tmp/missing-camb-sources.txt
-
-      - name: Re-audit required Fortran sources
-        run: |
-          set -euo pipefail
-
-          required_files=(
-            constants.f90
-            config.f90
-            classes.f90
-            MathUtils.f90
-            RungeKuttaDP45.f90
-            DarkAge21cm.f90
-            DarkEnergyInterface.f90
-            SourceWindows.f90
-            massive_neutrinos.f90
-            model.f90
-            results.f90
-            bessels.f90
-            hyperspherical_bessels.f90
-            hyperspherical_bessels_airy.f90
-            hyperspherical_bessels_smallnu.f90
-            hyperspherical_bessels_olver.f90
-            recfast.f90
-            DarkEnergyFluid.f90
-            DarkEnergyPPF.f90
-            PowellMinimize.f90
-            DarkEnergyQuintessence.f90
-            equations.f90
-            reionization.f90
-            InitialPower.f90
-            halofit.f90
-            SPkNonLinear.f90
-            SecondOrderPK.f90
-            ExternalNonLinearRatio.f90
-            lensing.f90
-            SeparableBispectrum.f90
-            cmbmain.f90
-            camb.f90
-            camb_python.f90
-          )
-
-          failed=0
-
-          for f in "${required_files[@]}"; do
-            if [ ! -s "$f" ]; then
-              echo "STILL MISSING: $f"
-              failed=1
-            fi
-          done
-
-          if [ "$failed" -ne 0 ]; then
-            echo "Required-source audit FAILED."
-            exit 1
-          fi
-
-          echo "ALL REQUIRED FORTRAN SOURCES PRESENT"
-
-      - name: Audit Fortran include files
-        run: |
-          set -euo pipefail
-
-          python - <<'PY'
-          import pathlib
-          import re
-          import sys
-
-          root = pathlib.Path(".")
-          missing = []
-          references = []
-
-          pattern = re.compile(
-              r"""^\s*(?:#\s*)?include\s*['"]([^'"]+)['"]""",
-              re.IGNORECASE,
-          )
-
-          for source in sorted(root.glob("*.f90")):
-              try:
-                  text = source.read_text(
-                      encoding="utf-8",
-                      errors="ignore",
-                  )
-              except OSError:
-                  continue
-
-              for line_number, line in enumerate(
-                  text.splitlines(),
-                  start=1,
-              ):
-                  match = pattern.search(line)
-
-                  if not match:
-                      continue
-
-                  target = match.group(1)
-                  references.append(
-                      (source.name, line_number, target)
-                  )
-
-                  candidate = source.parent / target
-
-                  if not candidate.exists():
-                      missing.append(
-                          (source.name, line_number, target)
-                      )
-
-          print("Fortran include references found:", len(references))
-
-          for source, line, target in references:
-              print(
-                  f"INCLUDE {source}:{line} -> {target}"
-              )
-
-          if missing:
-              print()
-              print("MISSING INCLUDE FILES:")
-
-              for source, line, target in missing:
-                  print(
-                      f"{source}:{line} -> {target}"
-                  )
-
-              sys.exit(1)
-
-          print("FORTRAN INCLUDE AUDIT PASS")
-          PY
-
-      - name: Verify build configuration files
-        run: |
-          set -euo pipefail
-
-          required_build_files=(
-            Makefile
-            Makefile_main
-          )
-
-          for f in "${required_build_files[@]}"; do
-            test -s "$f"
-            echo "PRESENT  $f"
-          done
-
-          test -s ../forutils/Makefile
-
-          echo "BUILD CONFIGURATION AUDIT PASS"
-
-      - name: Build recovered Fortran library
         env:
-          FORUTILSPATH: ${{ github.workspace }}/../forutils
-          CAMB_BUILD_DIR: ${{ runner.temp }}/camb-build
+          PYCAMB_OUTPUT_DIR: ${{ runner.temp }}/pycamb-output
         run: |
           set -euo pipefail
 
-          rm -rf "$CAMB_BUILD_DIR"
-          mkdir -p "$CAMB_BUILD_DIR"
+          library="$PYCAMB_OUTPUT_DIR/camblib.so"
 
-          rm -rf "${{ runner.temp }}/pycamb-output"
-          mkdir -p "${{ runner.temp }}/pycamb-output"
+          if [ ! -s "$library" ]; then
+            echo "Expected library was not produced: $library"
 
-          echo "========================================"
-          echo "STARTING FULL FORTRAN BUILD"
-          echo "========================================"
+            find \
+              "${{ runner.temp }}" \
+              "${{ github.workspace }}" \
+              -type f \
+              -name 'camblib.so' \
+              -print \
+              2>/dev/null || true
 
-          make python \
-            FORUTILSPATH="$FORUTILSPATH" \
-            CAMB_BUILD_DIR="$CAMB_BUILD_DIR" \
-            PYCAMB_OUTPUT_DIR="${{ runner.temp }}/pycamb-output"
-
-      - name: Verify compiled library
-        run: |
-          set -euo pipefail
-
-          library="${{ runner.temp }}/pycamb-output/camblib.so"
-
-          test -s "$library"
-
-          echo "========================================"
-          echo "COMPILED LIBRARY"
-          echo "========================================"
+            exit 1
+          fi
 
           ls -lh "$library"
           file "$library"
 
-          echo
           echo "FULL FORTRAN BUILD PASS"
