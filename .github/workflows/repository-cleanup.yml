@@ -223,13 +223,39 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Run Locked Saturation tests
+      - name: Install Python validation dependencies
         if: env.NO_CHANGES != 'true'
         run: |
           set -euo pipefail
 
           python -m pip install --upgrade pip
           python -m pip install pytest numpy scipy sympy packaging
+
+          echo "Python validation dependencies installed."
+
+      - name: Verify Locked Saturation imports
+        if: env.NO_CHANGES != 'true'
+        run: |
+          set -euo pipefail
+
+          python -c "from locked_saturation.model import ModelParameters, potential, potential_grad, auxiliaries, rhs; print('locked_saturation.model import PASS')"
+
+          python -c "from locked_saturation.validation import locked_arithmetic; print('locked arithmetic import PASS')"
+
+      - name: Run Locked Saturation tests
+        if: env.NO_CHANGES != 'true'
+        run: |
+          set -euo pipefail
+
+          test_dir="$RUNNER_TEMP/locked-saturation-tests"
+
+          rm -rf "$test_dir"
+          mkdir -p "$test_dir"
+
+          cp test_model.py "$test_dir/"
+          cp test_locked_arithmetic.py "$test_dir/"
+
+          cd "$test_dir"
 
           pytest -q \
             test_model.py \
@@ -241,6 +267,8 @@ jobs:
         if: env.NO_CHANGES != 'true'
         run: |
           set -euo pipefail
+
+          cd "$GITHUB_WORKSPACE"
 
           python -m compileall -q src/locked_saturation
           python -m py_compile test_model.py
@@ -279,6 +307,8 @@ jobs:
         if: env.NO_CHANGES != 'true'
         run: |
           set -euo pipefail
+
+          cd "$GITHUB_WORKSPACE"
 
           if [ ! -f RungeKuttaDP45.f90 ]; then
             curl \
@@ -319,6 +349,8 @@ jobs:
         run: |
           set -euo pipefail
 
+          cd "$GITHUB_WORKSPACE"
+
           make python \
             FORUTILSPATH="$FORUTILSPATH" \
             CAMB_BUILD_DIR="$CAMB_BUILD_DIR" \
@@ -335,6 +367,8 @@ jobs:
         if: env.NO_CHANGES != 'true'
         run: |
           set -euo pipefail
+
+          cd "$GITHUB_WORKSPACE"
 
           git push \
             --set-upstream \
