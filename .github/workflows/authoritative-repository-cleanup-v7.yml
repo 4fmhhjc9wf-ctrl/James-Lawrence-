@@ -1,0 +1,774 @@
+name: AUTHORITATIVE Repository Cleanup - v7
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    name: Run authoritative repository cleanup
+    runs-on: ubuntu-latest
+
+    env:
+      WORKFLOW_VERSION: "cleanup-v7.1-corrected"
+
+    steps:
+      # ============================================================
+      # CHECKOUT
+      # ============================================================
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ============================================================
+      # CONFIGURE PATHS
+      #
+      # RUNNER_TEMP is a shell environment variable.
+      # Do NOT use ${{ runner.temp }} in the job-level env block.
+      # ============================================================
+
+      - name: Configure runtime paths
+        run: |
+          set -euo pipefail
+
+          echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> "$GITHUB_ENV"
+          echo "PYTHONPYCACHEPREFIX=$RUNNER_TEMP/python-cache" >> "$GITHUB_ENV"
+
+          echo "FORUTILSPATH=$RUNNER_TEMP/forutils" >> "$GITHUB_ENV"
+
+          echo "CAMB_SOURCE_DIR=$RUNNER_TEMP/camb-source" >> "$GITHUB_ENV"
+          echo "CAMB_BUILD_DIR=$RUNNER_TEMP/camb-build" >> "$GITHUB_ENV"
+          echo "PYCAMB_OUTPUT_DIR=$RUNNER_TEMP/pycamb-output" >> "$GITHUB_ENV"
+
+          echo "Runtime paths configured."
+
+      - name: Show workflow identity
+        run: |
+          set -euo pipefail
+
+          echo "========================================"
+          echo "AUTHORITATIVE REPOSITORY CLEANUP"
+          echo "VERSION: $WORKFLOW_VERSION"
+          echo "COMMIT: $GITHUB_SHA"
+          echo "REF: $GITHUB_REF"
+          echo "RUN: $GITHUB_RUN_ID"
+          echo "========================================"
+
+      # ============================================================
+      # CREATE SAFE CLEANUP BRANCH
+      # ============================================================
+
+      - name: Configure Git and create cleanup branch
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          branch="cleanup/repository-structure-${GITHUB_RUN_ID}"
+
+          echo "CLEANUP_BRANCH=$branch" >> "$GITHUB_ENV"
+
+          git checkout -b "$branch"
+
+          echo "Cleanup branch created:"
+          echo "$branch"
+
+      # ============================================================
+      # CREATE ORGANIZED DIRECTORY STRUCTURE
+      # ============================================================
+
+      - name: Create cleanup directories
+        run: |
+          set -euo pipefail
+
+          mkdir -p \
+            docs/research-notes \
+            docs/reviewer \
+            docs/reports \
+            notebooks \
+            results/diagnostics \
+            archive/duplicate-files
+
+          echo "Cleanup directories ready."
+
+      # ============================================================
+      # MOVE DATED RESEARCH NOTES
+      # ============================================================
+
+      - name: Move dated research notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          for f in 2026-*.md; do
+            destination="docs/research-notes/$f"
+
+            if [ -e "$destination" ]; then
+              echo "ERROR: destination already exists:"
+              echo "$destination"
+              exit 1
+            fi
+
+            git mv "$f" "$destination"
+            echo "Moved research note: $f"
+          done
+
+      # ============================================================
+      # MOVE NOTEBOOKS
+      # ============================================================
+
+      - name: Move notebooks
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          for f in *.ipynb; do
+            destination="notebooks/$f"
+
+            if [ -e "$destination" ]; then
+              echo "ERROR: destination already exists:"
+              echo "$destination"
+              exit 1
+            fi
+
+            git mv "$f" "$destination"
+            echo "Moved notebook: $f"
+          done
+
+      # ============================================================
+      # MOVE REVIEWER DOCUMENTS
+      # ============================================================
+
+      - name: Move reviewer documents
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          files=(
+            Executive_Summary.pdf
+            Independent_Reviewer_Guide.pdf
+            Reviewer_Roadmap.pdf
+            Reproduction_Guide.pdf
+            Technical_Synopsis.pdf
+            QA_Audit.pdf
+          )
+
+          for f in "${files[@]}"; do
+            if [ -f "$f" ]; then
+              destination="docs/reviewer/$f"
+
+              if [ -e "$destination" ]; then
+                echo "ERROR: destination already exists:"
+                echo "$destination"
+                exit 1
+              fi
+
+              git mv "$f" "$destination"
+              echo "Moved reviewer document: $f"
+            fi
+          done
+
+      # ============================================================
+      # MOVE REMAINING ROOT PDF AND TEX REPORT FILES
+      # ============================================================
+
+      - name: Move remaining root PDFs and TEX files
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          for f in *.pdf; do
+            destination="docs/reports/$f"
+
+            if [ -e "$destination" ]; then
+              echo "ERROR: destination already exists:"
+              echo "$destination"
+              exit 1
+            fi
+
+            git mv "$f" "$destination"
+            echo "Moved report: $f"
+          done
+
+          for f in *.tex; do
+            destination="docs/reports/$f"
+
+            if [ -e "$destination" ]; then
+              echo "ERROR: destination already exists:"
+              echo "$destination"
+              exit 1
+            fi
+
+            git mv "$f" "$destination"
+            echo "Moved TEX source: $f"
+          done
+
+      # ============================================================
+      # MOVE GENERATED RESULT FILES
+      # ============================================================
+
+      - name: Move generated result files
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          patterns=(
+            "final_*.csv"
+            "final_*.json"
+            "*_diagnostics.json"
+            "*_results.csv"
+            "*_results.json"
+          )
+
+          for pattern in "${patterns[@]}"; do
+            for f in $pattern; do
+              [ -e "$f" ] || continue
+
+              destination="results/diagnostics/$f"
+
+              if [ -e "$destination" ]; then
+                echo "ERROR: destination already exists:"
+                echo "$destination"
+                exit 1
+              fi
+
+              git mv "$f" "$destination"
+              echo "Moved generated result: $f"
+            done
+          done
+
+      # ============================================================
+      # ARCHIVE OBVIOUS DUPLICATE ROOT FILES
+      # ============================================================
+
+      - name: Archive obvious duplicate files
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          patterns=(
+            "README-[0-9]*.md"
+            "CHANGELOG-[0-9]*.md"
+            "CONTRIBUTING-[0-9]*.md"
+            "Makefile-[0-9]*"
+            "pyproject-[0-9]*.toml"
+          )
+
+          for pattern in "${patterns[@]}"; do
+            for f in $pattern; do
+              [ -e "$f" ] || continue
+
+              destination="archive/duplicate-files/$f"
+
+              if [ -e "$destination" ]; then
+                echo "ERROR: destination already exists:"
+                echo "$destination"
+                exit 1
+              fi
+
+              git mv "$f" "$destination"
+              echo "Archived duplicate: $f"
+            done
+          done
+
+      # ============================================================
+      # VERIFY CRITICAL SCIENTIFIC / BUILD FILES
+      # ============================================================
+
+      - name: Verify build-critical files
+        run: |
+          set -euo pipefail
+
+          critical_files=(
+            Makefile
+            Makefile_main
+            setup.py
+            pyproject.toml
+            sat_locked_background.inc
+            equations.f90
+            camb.f90
+            camb_python.f90
+            test_model.py
+            test_locked_arithmetic.py
+            src/locked_saturation/__init__.py
+            src/locked_saturation/model.py
+            src/locked_saturation/validation.py
+          )
+
+          for f in "${critical_files[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "========================================"
+              echo "CRITICAL FILE MISSING"
+              echo "$f"
+              echo "========================================"
+              exit 1
+            fi
+
+            echo "PRESENT: $f"
+          done
+
+          echo "========================================"
+          echo "CRITICAL-FILE SAFETY CHECK PASS"
+          echo "========================================"
+
+      # ============================================================
+      # REVIEW CLEANUP BEFORE COMMITTING
+      # ============================================================
+
+      - name: Review cleanup
+        run: |
+          set -euo pipefail
+
+          echo "========================================"
+          echo "CLEANUP STATUS"
+          echo "========================================"
+
+          git status --short
+
+          echo
+          echo "========================================"
+          echo "CLEANUP DIFF STAT"
+          echo "========================================"
+
+          git diff --stat
+
+      # ============================================================
+      # COMMIT CLEANUP LOCALLY
+      #
+      # NOTHING IS PUSHED YET.
+      # ============================================================
+
+      - name: Commit cleanup locally
+        id: cleanup_commit
+        run: |
+          set -euo pipefail
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No cleanup changes were necessary."
+          else
+            git commit -m "chore: organize repository structure"
+
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Cleanup commit created locally."
+          fi
+
+      # ============================================================
+      # PYTHON SETUP
+      # ============================================================
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python validation dependencies
+        run: |
+          set -euo pipefail
+
+          python -m pip install --upgrade pip
+          python -m pip install pytest numpy
+
+          echo "Python validation dependencies installed."
+
+      # ============================================================
+      # VERIFY LOCKED SATURATION PACKAGE
+      # ============================================================
+
+      - name: Verify Locked Saturation imports
+        run: |
+          set -euo pipefail
+
+          python - <<'PY'
+          import locked_saturation
+          import locked_saturation.model
+          import locked_saturation.validation
+
+          from locked_saturation.model import (
+              ModelParameters,
+              potential,
+              potential_grad,
+              auxiliaries,
+              rhs,
+          )
+
+          from locked_saturation.validation import locked_arithmetic
+
+          expected = "/src/locked_saturation/"
+
+          modules = (
+              locked_saturation,
+              locked_saturation.model,
+              locked_saturation.validation,
+          )
+
+          for module in modules:
+              path = module.__file__.replace("\\", "/")
+              print(f"{module.__name__}: {path}")
+
+              if expected not in path:
+                  raise RuntimeError(
+                      f"Unexpected Locked Saturation module location: {path}"
+                  )
+
+          ModelParameters()
+
+          result = locked_arithmetic()
+
+          if not isinstance(result, dict):
+              raise TypeError(
+                  "locked_arithmetic() did not return a dictionary"
+              )
+
+          print("ModelParameters construction PASS")
+          print("Locked arithmetic execution PASS")
+          print("Locked Saturation imports PASS")
+          PY
+
+      # ============================================================
+      # RUN TESTS IN AN ISOLATED DIRECTORY
+      #
+      # THIS PREVENTS PYTEST FROM COLLECTING THE ROOT CAMB
+      # __init__.py THAT CAUSED THE PREVIOUS FAILURES.
+      # ============================================================
+
+      - name: Run Locked Saturation tests in isolated directory
+        run: |
+          set -euo pipefail
+
+          test_dir="$RUNNER_TEMP/locked-saturation-tests"
+
+          rm -rf "$test_dir"
+          mkdir -p "$test_dir"
+
+          cp \
+            "$GITHUB_WORKSPACE/test_model.py" \
+            "$test_dir/test_model.py"
+
+          cp \
+            "$GITHUB_WORKSPACE/test_locked_arithmetic.py" \
+            "$test_dir/test_locked_arithmetic.py"
+
+          cd "$test_dir"
+
+          echo "========================================"
+          echo "ISOLATED LOCKED SATURATION TESTS"
+          echo "========================================"
+
+          echo "Working directory:"
+          pwd
+
+          echo
+          echo "Test files:"
+          ls -la
+
+          echo
+          echo "PYTHONPATH:"
+          echo "$PYTHONPATH"
+
+          if [ -e "__init__.py" ]; then
+            echo "ERROR: __init__.py exists in isolated test directory."
+            exit 1
+          fi
+
+          if [ -e "baseconfig.py" ]; then
+            echo "ERROR: CAMB baseconfig.py exists in isolated test directory."
+            exit 1
+          fi
+
+          python -m pytest \
+            --rootdir="$test_dir" \
+            --import-mode=importlib \
+            -q \
+            test_model.py \
+            test_locked_arithmetic.py
+
+          echo "========================================"
+          echo "LOCKED SATURATION TESTS PASS"
+          echo "========================================"
+
+      # ============================================================
+      # COMPILE PYTHON SOURCES
+      #
+      # PYTHONPYCACHEPREFIX POINTS INTO RUNNER_TEMP, SO THIS DOES
+      # NOT LEAVE __pycache__ FILES IN THE REPOSITORY.
+      # ============================================================
+
+      - name: Compile Locked Saturation Python sources
+        run: |
+          set -euo pipefail
+
+          cd "$GITHUB_WORKSPACE"
+
+          python -m compileall \
+            -q \
+            src/locked_saturation
+
+          python -m py_compile \
+            test_model.py \
+            test_locked_arithmetic.py
+
+          echo "Python compilation PASS."
+
+      # ============================================================
+      # INSTALL FORTRAN BUILD TOOLCHAIN
+      # ============================================================
+
+      - name: Install Fortran build toolchain
+        run: |
+          set -euo pipefail
+
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            gfortran \
+            make \
+            git \
+            curl
+
+          echo "========================================"
+          echo "BUILD TOOL VERSIONS"
+          echo "========================================"
+
+          gfortran --version
+          make --version
+          git --version
+
+      # ============================================================
+      # FETCH FORUTILS INTO RUNNER TEMP
+      # ============================================================
+
+      - name: Fetch forutils
+        run: |
+          set -euo pipefail
+
+          rm -rf "$FORUTILSPATH"
+
+          git clone \
+            --depth=1 \
+            https://github.com/cmbant/forutils.git \
+            "$FORUTILSPATH"
+
+          if [ ! -f "$FORUTILSPATH/Makefile" ]; then
+            echo "ERROR: forutils Makefile not found."
+            exit 1
+          fi
+
+          echo "forutils checkout PASS."
+
+      # ============================================================
+      # CREATE A TEMPORARY SNAPSHOT OF THE CLEANED REPOSITORY
+      #
+      # THE CAMB BUILD RUNS THERE, NOT IN THE REAL WORKTREE.
+      # THIS PREVENTS MAKE FROM LEAVING compiler.ver, .d, .mod,
+      # OBJECT FILES, OR OTHER BUILD ARTIFACTS IN THE CLEANUP TREE.
+      # ============================================================
+
+      - name: Prepare temporary CAMB source snapshot
+        run: |
+          set -euo pipefail
+
+          rm -rf "$CAMB_SOURCE_DIR"
+          mkdir -p "$CAMB_SOURCE_DIR"
+
+          cd "$GITHUB_WORKSPACE"
+
+          git archive HEAD | tar -x -C "$CAMB_SOURCE_DIR"
+
+          if [ ! -f "$CAMB_SOURCE_DIR/Makefile" ]; then
+            echo "ERROR: temporary CAMB source snapshot is incomplete."
+            exit 1
+          fi
+
+          if [ ! -f "$CAMB_SOURCE_DIR/Makefile_main" ]; then
+            echo "ERROR: temporary CAMB source snapshot is missing Makefile_main."
+            exit 1
+          fi
+
+          echo "Temporary CAMB source snapshot PASS."
+
+      # ============================================================
+      # RESTORE RUNGEKUTTADP45 ONLY INSIDE TEMPORARY BUILD COPY
+      # ============================================================
+
+      - name: Restore RungeKuttaDP45 in temporary source if required
+        run: |
+          set -euo pipefail
+
+          cd "$CAMB_SOURCE_DIR"
+
+          if [ -s RungeKuttaDP45.f90 ]; then
+            echo "RungeKuttaDP45.f90 already present in source snapshot."
+          else
+            echo "RungeKuttaDP45.f90 absent."
+            echo "Downloading CAMB 2.0.1 source into temporary build tree."
+
+            curl \
+              --fail \
+              --location \
+              https://raw.githubusercontent.com/cmbant/CAMB/2.0.1/fortran/RungeKuttaDP45.f90 \
+              --output RungeKuttaDP45.f90
+          fi
+
+          if [ ! -s RungeKuttaDP45.f90 ]; then
+            echo "ERROR: RungeKuttaDP45.f90 unavailable."
+            exit 1
+          fi
+
+          echo "RungeKuttaDP45 source check PASS."
+
+      # ============================================================
+      # PREPARE TEMPORARY CAMB BUILD DIRECTORIES
+      # ============================================================
+
+      - name: Prepare CAMB build directories
+        run: |
+          set -euo pipefail
+
+          rm -rf \
+            "$CAMB_BUILD_DIR" \
+            "$PYCAMB_OUTPUT_DIR"
+
+          mkdir -p \
+            "$CAMB_BUILD_DIR/forutils/Releaselib" \
+            "$CAMB_BUILD_DIR/forutils/Debuglib" \
+            "$CAMB_BUILD_DIR/forutils/Release" \
+            "$CAMB_BUILD_DIR/forutils/Debug" \
+            "$CAMB_BUILD_DIR/camb/Releaselib" \
+            "$CAMB_BUILD_DIR/camb/Debuglib" \
+            "$CAMB_BUILD_DIR/camb/Release" \
+            "$CAMB_BUILD_DIR/camb/Debug" \
+            "$PYCAMB_OUTPUT_DIR"
+
+          echo "========================================"
+          echo "CAMB BUILD PATHS"
+          echo "========================================"
+
+          echo "CAMB_SOURCE_DIR=$CAMB_SOURCE_DIR"
+          echo "FORUTILSPATH=$FORUTILSPATH"
+          echo "CAMB_BUILD_DIR=$CAMB_BUILD_DIR"
+          echo "PYCAMB_OUTPUT_DIR=$PYCAMB_OUTPUT_DIR"
+
+      # ============================================================
+      # BUILD FULL CAMB FORTRAN LIBRARY
+      # ============================================================
+
+      - name: Build full CAMB Fortran library
+        run: |
+          set -euo pipefail
+
+          cd "$CAMB_SOURCE_DIR"
+
+          echo "========================================"
+          echo "BUILDING FULL CAMB FORTRAN LIBRARY"
+          echo "========================================"
+
+          make python \
+            FORUTILSPATH="$FORUTILSPATH" \
+            CAMB_BUILD_DIR="$CAMB_BUILD_DIR" \
+            PYCAMB_OUTPUT_DIR="$PYCAMB_OUTPUT_DIR"
+
+          output="$PYCAMB_OUTPUT_DIR/camblib.so"
+
+          if [ ! -s "$output" ]; then
+            echo "ERROR: CAMB build did not produce camblib.so."
+            exit 1
+          fi
+
+          echo
+          echo "CAMB output:"
+
+          ls -lh "$output"
+          file "$output"
+
+          echo "========================================"
+          echo "FULL CAMB FORTRAN BUILD PASS"
+          echo "========================================"
+
+      # ============================================================
+      # FINAL WORKTREE SAFETY CHECK
+      # ============================================================
+
+      - name: Verify validation did not alter cleanup commit
+        run: |
+          set -euo pipefail
+
+          cd "$GITHUB_WORKSPACE"
+
+          echo "========================================"
+          echo "FINAL GIT STATUS"
+          echo "========================================"
+
+          git status --short
+
+          if [ -n "$(git status --porcelain)" ]; then
+            echo
+            echo "ERROR: validation/build created unexpected repository changes."
+            exit 1
+          fi
+
+          echo
+          echo "Validation left the cleanup commit unchanged."
+
+      # ============================================================
+      # PUSH ONLY AFTER ALL TESTS AND BUILD PASS
+      # ============================================================
+
+      - name: Push validated cleanup branch
+        if: steps.cleanup_commit.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+
+          cd "$GITHUB_WORKSPACE"
+
+          git push \
+            --set-upstream \
+            origin \
+            "$CLEANUP_BRANCH"
+
+          echo "========================================"
+          echo "VALIDATED CLEANUP BRANCH PUSHED"
+          echo "========================================"
+
+          echo "$CLEANUP_BRANCH"
+
+      # ============================================================
+      # FINAL SUMMARY
+      # ============================================================
+
+      - name: Final cleanup summary
+        run: |
+          echo "========================================"
+          echo "AUTHORITATIVE REPOSITORY CLEANUP COMPLETE"
+          echo "========================================"
+
+          echo "Workflow version: $WORKFLOW_VERSION"
+
+          echo
+          echo "Critical repository files: PRESERVED"
+          echo "Locked Saturation imports: PASS"
+          echo "Locked Saturation tests: PASS"
+          echo "Python compilation: PASS"
+          echo "CAMB Fortran build: PASS"
+          echo "Build artifacts isolated from repository: PASS"
+
+          if [ "${{ steps.cleanup_commit.outputs.changed }}" = "true" ]; then
+            echo "Cleanup branch: PUSHED"
+            echo "$CLEANUP_BRANCH"
+          else
+            echo "Cleanup branch: NO CHANGES REQUIRED"
+          fi
+
+          echo "========================================"
