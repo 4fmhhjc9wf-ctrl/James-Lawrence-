@@ -257,7 +257,9 @@ jobs:
 
           cd "$test_dir"
 
-          pytest -q \
+          export PYTHONPATH="$GITHUB_WORKSPACE/src:${PYTHONPATH:-}"
+
+          python -m pytest -q \
             test_model.py \
             test_locked_arithmetic.py
 
