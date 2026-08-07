@@ -1,3 +1,3 @@
-Triggering node-scan workflow run (user requested).
+Trigger node-scan workflow
 
-This file is only to create a commit on fix/update-node-version to trigger the node-scan workflow. You can safely remove it after the workflow run completes.
+This file is a no-op trigger to run .github/workflows/node-scan.yml via a push to the fix/update-node-version branch.
