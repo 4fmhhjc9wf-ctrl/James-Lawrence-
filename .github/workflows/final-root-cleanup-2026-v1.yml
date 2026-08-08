@@ -1,0 +1,164 @@
+name: Final Root Cleanup
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  final-cleanup:
+    name: Archive final root duplicates and used cleanup workflows
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify root duplicates match package copies
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cmp -s cli.py src/locked_saturation/cli.py
+          cmp -s simulation.py src/locked_saturation/simulation.py
+          cmp -s validation.py src/locked_saturation/validation.py
+
+          echo "Confirmed root copies are exact duplicates."
+
+      - name: Archive final root duplicates
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ARCHIVE="archive/duplicate-files"
+          mkdir -p "$ARCHIVE"
+
+          move_if_present () {
+            src="$1"
+            dst="$2"
+
+            if [ -f "$src" ]; then
+              if [ -e "$dst" ]; then
+                echo "Destination already exists: $dst"
+                echo "Removing redundant active copy: $src"
+                rm "$src"
+              else
+                echo "Moving: $src -> $dst"
+                mv "$src" "$dst"
+              fi
+            else
+              echo "Already absent: $src"
+            fi
+          }
+
+          move_if_present \
+            "cli.py" \
+            "$ARCHIVE/root-cli.py"
+
+          move_if_present \
+            "simulation.py" \
+            "$ARCHIVE/root-simulation.py"
+
+          move_if_present \
+            "validation.py" \
+            "$ARCHIVE/root-validation.py"
+
+      - name: Archive completed one-time cleanup workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ARCHIVE="archive/legacy-files/workflows"
+          mkdir -p "$ARCHIVE"
+
+          move_if_present () {
+            src="$1"
+            dst="$2"
+
+            if [ -f "$src" ]; then
+              if [ -e "$dst" ]; then
+                echo "Destination already exists: $dst"
+                rm "$src"
+              else
+                echo "Moving: $src -> $dst"
+                mv "$src" "$dst"
+              fi
+            else
+              echo "Already absent: $src"
+            fi
+          }
+
+          move_if_present \
+            ".github/workflows/move-remaining-duplicates-v2.yml" \
+            "$ARCHIVE/move-remaining-duplicates-v2.yml"
+
+          move_if_present \
+            ".github/workflows/archive-legacy-leftovers-2026-v1.yml" \
+            "$ARCHIVE/archive-legacy-leftovers-2026-v1.yml"
+
+      - name: Verify active package files remain
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f src/locked_saturation/cli.py
+          test -f src/locked_saturation/model.py
+          test -f src/locked_saturation/simulation.py
+          test -f src/locked_saturation/validation.py
+
+          test -f test_model.py
+          test -f test_locked_arithmetic.py
+
+          test -f .github/workflows/python-tests.yml
+          test -f .github/workflows/full-fortran-build.yml
+          test -f .github/workflows/fix-reviewer-pages.yml
+          test -f .github/workflows/authoritative-repository-cleanup-v7.yml
+
+          echo "Active implementation and primary workflows remain intact."
+
+      - name: Verify cleanup result
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test ! -e cli.py
+          test ! -e simulation.py
+          test ! -e validation.py
+
+          test ! -e .github/workflows/move-remaining-duplicates-v2.yml
+          test ! -e .github/workflows/archive-legacy-leftovers-2026-v1.yml
+
+          test -f archive/duplicate-files/root-cli.py
+          test -f archive/duplicate-files/root-simulation.py
+          test -f archive/duplicate-files/root-validation.py
+
+          test -f archive/legacy-files/workflows/move-remaining-duplicates-v2.yml
+          test -f archive/legacy-files/workflows/archive-legacy-leftovers-2026-v1.yml
+
+          echo "Final cleanup verification PASS."
+
+      - name: Commit and push cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No cleanup changes were needed."
+            exit 0
+          fi
+
+          git commit -m "chore: finish repository cleanup"
+
+          git fetch origin main
+          git rebase origin/main
+
+          git push origin HEAD:main
