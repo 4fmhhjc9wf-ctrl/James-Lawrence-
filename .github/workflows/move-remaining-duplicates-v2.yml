@@ -1,0 +1,149 @@
+name: Move Remaining Duplicate Files
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  move-duplicates:
+    name: Archive confirmed duplicate files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Move confirmed duplicates to archive
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ARCHIVE="archive/duplicate-files"
+          mkdir -p "$ARCHIVE"
+
+          move_if_present () {
+            src="$1"
+            dst="$ARCHIVE/$2"
+
+            if [ -f "$src" ]; then
+              echo "Moving: $src -> $dst"
+
+              if [ -e "$dst" ]; then
+                echo "ERROR: destination already exists: $dst"
+                exit 1
+              fi
+
+              mv "$src" "$dst"
+            else
+              echo "Already absent or previously moved: $src"
+            fi
+          }
+
+          move_if_present "FINAL_CAMB_DIAGNOSTICS-2.md" \
+                          "FINAL_CAMB_DIAGNOSTICS-2.md"
+
+          move_if_present "HighLExtrapTemplate_lenspotentialCls-2.dat" \
+                          "HighLExtrapTemplate_lenspotentialCls-2.dat"
+
+          move_if_present "cli-2.py" \
+                          "cli-2.py"
+
+          move_if_present "derived_parameter_card-2.csv" \
+                          "derived_parameter_card-2.csv"
+
+          move_if_present "derived_parameter_card-3.csv" \
+                          "derived_parameter_card-3.csv"
+
+          move_if_present "locked_vs_control_full_spectra-2.csv" \
+                          "locked_vs_control_full_spectra-2.csv"
+
+          move_if_present "model-2.py" \
+                          "model-2.py"
+
+          move_if_present "model-3.py" \
+                          "model-3.py"
+
+          move_if_present "planck_2018_lensing_bandpower_results-2.json" \
+                          "planck_2018_lensing_bandpower_results-2.json"
+
+          move_if_present "simulation-2.py" \
+                          "simulation-2.py"
+
+          move_if_present "spectra_amplitude_shape-2.csv" \
+                          "spectra_amplitude_shape-2.csv"
+
+          move_if_present "spectra_residual_bands-2.csv" \
+                          "spectra_residual_bands-2.csv"
+
+          move_if_present "validation-2.py" \
+                          "validation-2.py"
+
+          move_if_present "results/diagnostics/final_camb_diagnostics-2.json" \
+                          "final_camb_diagnostics-2.json"
+
+      - name: Verify canonical files remain
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f FINAL_CAMB_DIAGNOSTICS.md
+          test -f HighLExtrapTemplate_lenspotentialCls.dat
+          test -f cli.py
+          test -f derived_parameter_card.csv
+          test -f locked_vs_control_full_spectra.csv
+          test -f simulation.py
+          test -f spectra_amplitude_shape.csv
+          test -f spectra_residual_bands.csv
+          test -f validation.py
+          test -f results/diagnostics/final_camb_diagnostics.json
+
+          echo "Canonical files remain in place."
+
+      - name: Verify archived duplicates
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f archive/duplicate-files/FINAL_CAMB_DIAGNOSTICS-2.md
+          test -f archive/duplicate-files/HighLExtrapTemplate_lenspotentialCls-2.dat
+          test -f archive/duplicate-files/cli-2.py
+          test -f archive/duplicate-files/derived_parameter_card-2.csv
+          test -f archive/duplicate-files/derived_parameter_card-3.csv
+          test -f archive/duplicate-files/locked_vs_control_full_spectra-2.csv
+          test -f archive/duplicate-files/model-2.py
+          test -f archive/duplicate-files/model-3.py
+          test -f archive/duplicate-files/planck_2018_lensing_bandpower_results-2.json
+          test -f archive/duplicate-files/simulation-2.py
+          test -f archive/duplicate-files/spectra_amplitude_shape-2.csv
+          test -f archive/duplicate-files/spectra_residual_bands-2.csv
+          test -f archive/duplicate-files/validation-2.py
+          test -f archive/duplicate-files/final_camb_diagnostics-2.json
+
+          echo "All confirmed duplicates are archived."
+
+      - name: Commit and push cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No duplicate-file changes were needed."
+            exit 0
+          fi
+
+          git commit -m "chore: archive remaining confirmed duplicate files"
+
+          git fetch origin main
+          git rebase origin/main
+
+          git push origin HEAD:main
