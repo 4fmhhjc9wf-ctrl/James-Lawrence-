@@ -88,9 +88,7 @@ jobs:
 
           ## Document options
 
-          **[Open formatted Executive Summary PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Executive_Summary.pdf?raw=1)**
-
-          **[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Executive_Summary.pdf)**
+          **[Open formatted Executive Summary PDF](https://cdn.jsdelivr.net/gh/4fmhhjc9wf-ctrl/James-Lawrence-@main/docs/reviewer/Executive_Summary.pdf)**
 
           The page you are currently reading is the recommended mobile-friendly version.
 
@@ -136,9 +134,7 @@ jobs:
 
           ## Document options
 
-          **[Open formatted Independent Reviewer Guide PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Independent_Reviewer_Guide.pdf?raw=1)**
-
-          **[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Independent_Reviewer_Guide.pdf)**
+          **[Open formatted Independent Reviewer Guide PDF](https://cdn.jsdelivr.net/gh/4fmhhjc9wf-ctrl/James-Lawrence-@main/docs/reviewer/Independent_Reviewer_Guide.pdf)**
 
           The page you are currently reading is the recommended mobile-friendly version.
 
@@ -196,9 +192,7 @@ jobs:
 
           ## Document options
 
-          **[Open formatted Reviewer Roadmap PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reviewer_Roadmap.pdf?raw=1)**
-
-          **[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Reviewer_Roadmap.pdf)**
+          **[Open formatted Reviewer Roadmap PDF](https://cdn.jsdelivr.net/gh/4fmhhjc9wf-ctrl/James-Lawrence-@main/docs/reviewer/Reviewer_Roadmap.pdf)**
 
           The page you are currently reading is the recommended mobile-friendly version.
 
@@ -273,9 +267,7 @@ jobs:
 
           ## Document options
 
-          **[Open formatted Technical Synopsis PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Technical_Synopsis.pdf?raw=1)**
-
-          **[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Technical_Synopsis.pdf)**
+          **[Open formatted Technical Synopsis PDF](https://cdn.jsdelivr.net/gh/4fmhhjc9wf-ctrl/James-Lawrence-@main/docs/reviewer/Technical_Synopsis.pdf)**
 
           The page you are currently reading is the recommended mobile-friendly version.
 
@@ -324,9 +316,7 @@ jobs:
 
           ## Document options
 
-          **[Open formatted Reproduction Guide PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reproduction_Guide.pdf?raw=1)**
-
-          **[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Reproduction_Guide.pdf)**
+          **[Open formatted Reproduction Guide PDF](https://cdn.jsdelivr.net/gh/4fmhhjc9wf-ctrl/James-Lawrence-@main/docs/reviewer/Reproduction_Guide.pdf)**
 
           The page you are currently reading is the recommended mobile-friendly version.
 
@@ -377,9 +367,7 @@ jobs:
 
           ## Document options
 
-          **[Open formatted QA Audit PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/QA_Audit.pdf?raw=1)**
-
-          **[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/QA_Audit.pdf)**
+          **[Open formatted QA Audit PDF](https://cdn.jsdelivr.net/gh/4fmhhjc9wf-ctrl/James-Lawrence-@main/docs/reviewer/QA_Audit.pdf)**
 
           The page you are currently reading is the recommended mobile-friendly version.
 
@@ -392,15 +380,13 @@ jobs:
 
           The complete long-form manuscript is retained as a PDF because of its size, equations, figures, and formatting.
 
-          This page provides a mobile-friendly landing page so a reviewer does not hit a dead end if GitHub's PDF renderer fails.
+          This page provides a mobile-friendly landing page so a reviewer does not hit a dead end if GitHub's built-in PDF renderer fails.
 
-          ## Manuscript options
+          ## Manuscript option
 
-          **[Open the formatted manuscript PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf?raw=1)**
+          **[Open formatted manuscript PDF](https://cdn.jsdelivr.net/gh/4fmhhjc9wf-ctrl/James-Lawrence-@main/docs/reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf)**
 
-          **[Direct manuscript PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf)**
-
-          Depending on the browser and device, the direct file link may open the PDF in the system viewer or offer it as a file.
+          Depending on the browser and device, the PDF should open in the browser or system PDF viewer.
 
           ## Reviewer material
 
@@ -512,15 +498,15 @@ jobs:
           grep -Fq "docs/reviewer/QA_Audit.md" README.md
           grep -Fq "docs/reviewer/Manuscript_Access.md" README.md
 
-          grep -Fq "raw.githubusercontent.com" docs/reviewer/Executive_Summary.md
-          grep -Fq "raw.githubusercontent.com" docs/reviewer/Independent_Reviewer_Guide.md
-          grep -Fq "raw.githubusercontent.com" docs/reviewer/Reviewer_Roadmap.md
-          grep -Fq "raw.githubusercontent.com" docs/reviewer/Technical_Synopsis.md
-          grep -Fq "raw.githubusercontent.com" docs/reviewer/Reproduction_Guide.md
-          grep -Fq "raw.githubusercontent.com" docs/reviewer/QA_Audit.md
-          grep -Fq "raw.githubusercontent.com" docs/reviewer/Manuscript_Access.md
+          grep -Fq "cdn.jsdelivr.net" docs/reviewer/Executive_Summary.md
+          grep -Fq "cdn.jsdelivr.net" docs/reviewer/Independent_Reviewer_Guide.md
+          grep -Fq "cdn.jsdelivr.net" docs/reviewer/Reviewer_Roadmap.md
+          grep -Fq "cdn.jsdelivr.net" docs/reviewer/Technical_Synopsis.md
+          grep -Fq "cdn.jsdelivr.net" docs/reviewer/Reproduction_Guide.md
+          grep -Fq "cdn.jsdelivr.net" docs/reviewer/QA_Audit.md
+          grep -Fq "cdn.jsdelivr.net" docs/reviewer/Manuscript_Access.md
 
-          echo "Browser-readable reviewer pages, PDFs, and README links verified."
+          echo "Browser-readable pages, PDFs, README links, and jsDelivr links verified."
 
 
       - name: Commit and push changes
@@ -538,7 +524,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "fix: provide browser and PDF reviewer access"
+          git commit -m "fix: serve reviewer PDFs through jsDelivr"
 
           echo "Fetching latest main before push..."
           git fetch origin main
