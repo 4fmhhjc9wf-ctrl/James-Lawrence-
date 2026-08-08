@@ -20,6 +20,7 @@ jobs:
       - name: Create browser-readable reviewer pages
         shell: bash
         run: |
+          set -e
           mkdir -p docs/reviewer
 
           cat > docs/reviewer/Executive_Summary.md <<'EOF'
@@ -27,7 +28,7 @@ jobs:
 
           **Locked Saturation Cosmology / Gravitational Saturation**
 
-          This is the browser-readable entry point for the Executive Summary.
+          This is the browser-readable version of the Executive Summary and is intended to work well on desktop and mobile devices.
 
           Locked Saturation Cosmology is a computationally implemented phenomenological gravitational model being investigated as a possible common description of galaxy-scale mass discrepancies and late-time cosmological acceleration.
 
@@ -85,15 +86,22 @@ jobs:
 
           ---
 
-          **[Open the formatted Executive Summary PDF](Executive_Summary.pdf?raw=1)**
+          ## Document options
+
+          **[Open formatted Executive Summary PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Executive_Summary.pdf?raw=1)**
+
+          **[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Executive_Summary.pdf)**
+
+          The page you are currently reading is the recommended mobile-friendly version.
 
           [Back to main repository](../../README.md)
           EOF
 
+
           cat > docs/reviewer/Independent_Reviewer_Guide.md <<'EOF'
           # Independent Reviewer Guide
 
-          This page provides a browser-readable starting point for independent evaluation of Locked Saturation Cosmology.
+          This browser-readable page provides a starting point for independent evaluation of Locked Saturation Cosmology.
 
           ## What a reviewer should check
 
@@ -126,17 +134,24 @@ jobs:
 
           ---
 
-          **[Open the formatted Independent Reviewer Guide PDF](Independent_Reviewer_Guide.pdf?raw=1)**
+          ## Document options
+
+          **[Open formatted Independent Reviewer Guide PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Independent_Reviewer_Guide.pdf?raw=1)**
+
+          **[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Independent_Reviewer_Guide.pdf)**
+
+          The page you are currently reading is the recommended mobile-friendly version.
 
           [Back to main repository](../../README.md)
           EOF
+
 
           cat > docs/reviewer/Reviewer_Roadmap.md <<'EOF'
           # Reviewer Roadmap
 
           This page provides browser-readable navigation through the review package.
 
-          ## Recommended order
+          ## Recommended reading order
 
           1. [Executive Summary](Executive_Summary.md)
           2. [Independent Reviewer Guide](Independent_Reviewer_Guide.md)
@@ -179,10 +194,17 @@ jobs:
 
           ---
 
-          **[Open the formatted Reviewer Roadmap PDF](Reviewer_Roadmap.pdf?raw=1)**
+          ## Document options
+
+          **[Open formatted Reviewer Roadmap PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reviewer_Roadmap.pdf?raw=1)**
+
+          **[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Reviewer_Roadmap.pdf)**
+
+          The page you are currently reading is the recommended mobile-friendly version.
 
           [Back to main repository](../../README.md)
           EOF
+
 
           cat > docs/reviewer/Technical_Synopsis.md <<'EOF'
           # Technical Synopsis
@@ -249,10 +271,17 @@ jobs:
 
           ---
 
-          **[Open the formatted Technical Synopsis PDF](Technical_Synopsis.pdf?raw=1)**
+          ## Document options
+
+          **[Open formatted Technical Synopsis PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Technical_Synopsis.pdf?raw=1)**
+
+          **[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Technical_Synopsis.pdf)**
+
+          The page you are currently reading is the recommended mobile-friendly version.
 
           [Back to main repository](../../README.md)
           EOF
+
 
           cat > docs/reviewer/Reproduction_Guide.md <<'EOF'
           # Reproduction Guide
@@ -293,10 +322,17 @@ jobs:
 
           ---
 
-          **[Open the formatted Reproduction Guide PDF](Reproduction_Guide.pdf?raw=1)**
+          ## Document options
+
+          **[Open formatted Reproduction Guide PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reproduction_Guide.pdf?raw=1)**
+
+          **[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Reproduction_Guide.pdf)**
+
+          The page you are currently reading is the recommended mobile-friendly version.
 
           [Back to main repository](../../README.md)
           EOF
+
 
           cat > docs/reviewer/QA_Audit.md <<'EOF'
           # QA Audit
@@ -339,21 +375,32 @@ jobs:
 
           ---
 
-          **[Open the formatted QA Audit PDF](QA_Audit.pdf?raw=1)**
+          ## Document options
+
+          **[Open formatted QA Audit PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/QA_Audit.pdf?raw=1)**
+
+          **[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/QA_Audit.pdf)**
+
+          The page you are currently reading is the recommended mobile-friendly version.
 
           [Back to main repository](../../README.md)
           EOF
 
+
           cat > docs/reviewer/Manuscript_Access.md <<'EOF'
           # Current Manuscript — Review Copy
 
-          The complete long-form manuscript is retained as a PDF because of its size and formatting.
+          The complete long-form manuscript is retained as a PDF because of its size, equations, figures, and formatting.
 
-          ## Open the manuscript
+          This page provides a mobile-friendly landing page so a reviewer does not hit a dead end if GitHub's PDF renderer fails.
 
-          **[Open Current Manuscript PDF](../reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf?raw=1)**
+          ## Manuscript options
 
-          The surrounding reviewer documents are available directly as normal GitHub pages so that reviewers do not have to depend on GitHub's PDF renderer for navigation through the project.
+          **[Open the formatted manuscript PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf?raw=1)**
+
+          **[Direct manuscript PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf)**
+
+          Depending on the browser and device, the direct file link may open the PDF in the system viewer or offer it as a file.
 
           ## Reviewer material
 
@@ -367,6 +414,7 @@ jobs:
           [Back to main repository](../../README.md)
           EOF
 
+
       - name: Update README reviewer links
         shell: python
         run: |
@@ -378,9 +426,12 @@ jobs:
 
           replacement = """## Start Here
 
-          The main reviewer links below open as normal GitHub pages and do **not** depend on GitHub's PDF renderer.
+          The reviewer material is available in two forms:
 
-          Each reviewer page also contains a link to its formatted PDF version.
+          - **Browser-readable pages** for reliable viewing on desktop and mobile.
+          - **Formatted PDF copies** available from each reviewer page.
+
+          The browser-readable pages are the recommended starting point because they do not depend on GitHub's PDF renderer.
 
           If you are encountering this project for the first time, the recommended reading order is:
 
@@ -403,7 +454,7 @@ jobs:
              Quality-assurance and validation material.
 
           7. **[Current Manuscript — Review Copy](docs/reviewer/Manuscript_Access.md)**  
-             Browser-safe access page for the complete long-form manuscript PDF.
+             Mobile-friendly access page for the complete long-form manuscript PDF.
 
           """
 
@@ -431,6 +482,7 @@ jobs:
 
           path.write_text(updated, encoding="utf-8")
 
+
       - name: Verify generated files and README links
         shell: bash
         run: |
@@ -444,6 +496,14 @@ jobs:
           test -f docs/reviewer/QA_Audit.md
           test -f docs/reviewer/Manuscript_Access.md
 
+          test -f docs/reviewer/Executive_Summary.pdf
+          test -f docs/reviewer/Independent_Reviewer_Guide.pdf
+          test -f docs/reviewer/Reviewer_Roadmap.pdf
+          test -f docs/reviewer/Technical_Synopsis.pdf
+          test -f docs/reviewer/Reproduction_Guide.pdf
+          test -f docs/reviewer/QA_Audit.pdf
+          test -f docs/reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf
+
           grep -Fq "docs/reviewer/Executive_Summary.md" README.md
           grep -Fq "docs/reviewer/Independent_Reviewer_Guide.md" README.md
           grep -Fq "docs/reviewer/Reviewer_Roadmap.md" README.md
@@ -452,7 +512,16 @@ jobs:
           grep -Fq "docs/reviewer/QA_Audit.md" README.md
           grep -Fq "docs/reviewer/Manuscript_Access.md" README.md
 
-          echo "Reviewer pages and README links verified."
+          grep -Fq "raw.githubusercontent.com" docs/reviewer/Executive_Summary.md
+          grep -Fq "raw.githubusercontent.com" docs/reviewer/Independent_Reviewer_Guide.md
+          grep -Fq "raw.githubusercontent.com" docs/reviewer/Reviewer_Roadmap.md
+          grep -Fq "raw.githubusercontent.com" docs/reviewer/Technical_Synopsis.md
+          grep -Fq "raw.githubusercontent.com" docs/reviewer/Reproduction_Guide.md
+          grep -Fq "raw.githubusercontent.com" docs/reviewer/QA_Audit.md
+          grep -Fq "raw.githubusercontent.com" docs/reviewer/Manuscript_Access.md
+
+          echo "Browser-readable reviewer pages, PDFs, and README links verified."
+
 
       - name: Commit and push changes
         shell: bash
@@ -469,7 +538,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "fix: add browser-readable reviewer pages"
+          git commit -m "fix: provide browser and PDF reviewer access"
 
           echo "Fetching latest main before push..."
           git fetch origin main
@@ -477,5 +546,5 @@ jobs:
           echo "Rebasing generated commit onto latest main..."
           git rebase origin/main
 
-          echo "Pushing reviewer-page fix..."
+          echo "Pushing reviewer navigation update..."
           git push origin HEAD:main
