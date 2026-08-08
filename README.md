@@ -15,29 +15,27 @@ The calculations and validation contained here demonstrate what the present impl
 
 ## Start Here
 
-> **PDF note:** The links below open the original PDF files directly. This avoids GitHub's built-in PDF preview, which may fail on some mobile browsers even when the PDF itself is valid.
-
 If you are encountering this project for the first time, the recommended reading order is:
 
-1. **[Executive Summary](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Executive_Summary.pdf)**  
+1. **[Executive Summary](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Executive_Summary.pdf?raw=1)**  
    Short overview of the hypothesis, implementation, and current results.
 
-2. **[Independent Reviewer Guide](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Independent_Reviewer_Guide.pdf)**  
+2. **[Independent Reviewer Guide](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Independent_Reviewer_Guide.pdf?raw=1)**  
    What should be checked and how to approach an independent evaluation.
 
-3. **[Reviewer Roadmap](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Reviewer_Roadmap.pdf)**  
+3. **[Reviewer Roadmap](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reviewer_Roadmap.pdf?raw=1)**  
    Navigation through the repository and validation material.
 
-4. **[Technical Synopsis](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Technical_Synopsis.pdf)**  
+4. **[Technical Synopsis](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Technical_Synopsis.pdf?raw=1)**  
    Compact technical description of the current model.
 
-5. **[Reproduction Guide](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Reproduction_Guide.pdf)**  
+5. **[Reproduction Guide](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reproduction_Guide.pdf?raw=1)**  
    Instructions for independently reproducing the computational checks.
 
-6. **[QA Audit](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/QA_Audit.pdf)**  
+6. **[QA Audit](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/QA_Audit.pdf?raw=1)**  
    Quality-assurance and validation material.
 
-7. **[Current Manuscript — Review Copy](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf)**  
+7. **[Current Manuscript — Review Copy](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf?raw=1)**  
    Long-form presentation of the model and its interpretation.
 
 ---
@@ -221,7 +219,7 @@ It was retained because it provides a known maintenance path that can isolate th
 
 A reviewer should begin with the:
 
-**[Reproduction Guide — Open PDF Directly](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Reproduction_Guide.pdf)**
+**[Reproduction Guide](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reproduction_Guide.pdf?raw=1)**
 
 and then work from the checked-in implementation, scripts, tests, and documented inputs.
 
