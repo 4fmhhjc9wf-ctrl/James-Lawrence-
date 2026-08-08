@@ -1,0 +1,472 @@
+name: Fix Reviewer Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix-reviewer-navigation:
+    name: Create browser-readable reviewer pages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create browser-readable reviewer pages
+        shell: bash
+        run: |
+          mkdir -p docs/reviewer
+
+          cat > docs/reviewer/Executive_Summary.md <<'EOF'
+          # Executive Summary
+
+          **Locked Saturation Cosmology / Gravitational Saturation**
+
+          This is the browser-readable entry point for the Executive Summary.
+
+          Locked Saturation Cosmology is a computationally implemented phenomenological gravitational model being investigated as a possible common description of galaxy-scale mass discrepancies and late-time cosmological acceleration.
+
+          The purpose of this repository is to make the proposal inspectable, reproducible, and independently testable.
+
+          ## Core formulation
+
+          The current formulation uses a saturation variable `C`:
+
+          ```text
+          μ(C) = 1 - C
+          ```
+
+          with
+
+          ```text
+          0 ≤ C < 1
+          ```
+
+          A stable residual potential is represented locally by
+
+          ```text
+          V(C) = V∞ + 1/2 m²(C - C*)²
+          ```
+
+          with
+
+          ```text
+          C* < 1
+          m² > 0
+          ```
+
+          After freeze-out, the background cosmological implementation uses
+
+          ```text
+          H² = (8π G_eff / 3) (ρ_m + ρ_r + V∞)
+          ```
+
+          with
+
+          ```text
+          G_eff = G / μ*
+          μ* = 1 - C*
+          ```
+
+          The weak-field phenomenological response currently used in the galaxy-scale implementation is
+
+          ```text
+          μ(x) = x / sqrt(1 + x²)
+          ```
+
+          The implementation has undergone internal numerical and computational checks, but those checks are not presented as independent confirmation of the physical theory.
+
+          Independent reproduction, observational comparison, statistical model comparison, perturbation analysis, lensing, structure growth, and falsification remain appropriate scientific tests.
+
+          ---
+
+          **[Open the formatted Executive Summary PDF](Executive_Summary.pdf?raw=1)**
+
+          [Back to main repository](../../README.md)
+          EOF
+
+          cat > docs/reviewer/Independent_Reviewer_Guide.md <<'EOF'
+          # Independent Reviewer Guide
+
+          This page provides a browser-readable starting point for independent evaluation of Locked Saturation Cosmology.
+
+          ## What a reviewer should check
+
+          A useful independent review should distinguish among:
+
+          1. the equations;
+          2. the implementation of those equations;
+          3. the numerical results produced by that implementation; and
+          4. the physical interpretation assigned to those results.
+
+          Reviewers are encouraged to identify the specific equation, assumption, parameter, dataset, numerical method, implementation choice, statistical comparison, or reported result being challenged.
+
+          ## Priority questions
+
+          An independent reviewer should determine whether:
+
+          - the checked-in code corresponds to the equations stated in the documentation;
+          - the locked arithmetic tests reproduce;
+          - the primary model tests reproduce;
+          - the galaxy-scale calculations can be regenerated;
+          - the cosmological calculations can be regenerated;
+          - the CAMB/Fortran implementation builds and behaves as documented;
+          - the results survive reasonable robustness tests;
+          - an independently written implementation produces compatible results;
+          - the framework makes distinguishable or falsifiable predictions.
+
+          Internal computational checks are evidence about the implementation, not independent proof of the physical theory.
+
+          A failed reproduction is scientifically useful and should be documented rather than hidden.
+
+          ---
+
+          **[Open the formatted Independent Reviewer Guide PDF](Independent_Reviewer_Guide.pdf?raw=1)**
+
+          [Back to main repository](../../README.md)
+          EOF
+
+          cat > docs/reviewer/Reviewer_Roadmap.md <<'EOF'
+          # Reviewer Roadmap
+
+          This page provides browser-readable navigation through the review package.
+
+          ## Recommended order
+
+          1. [Executive Summary](Executive_Summary.md)
+          2. [Independent Reviewer Guide](Independent_Reviewer_Guide.md)
+          3. [Technical Synopsis](Technical_Synopsis.md)
+          4. [Reproduction Guide](Reproduction_Guide.md)
+          5. [QA Audit](QA_Audit.md)
+          6. [Current Manuscript](Manuscript_Access.md)
+
+          ## Repository areas
+
+          ```text
+          docs/reviewer/
+              Reviewer-facing documentation
+
+          docs/reports/
+              Current manuscript and technical reports
+
+          docs/research-notes/
+              Research and development notes
+
+          src/locked_saturation/
+              Core Locked Saturation implementation
+
+          scripts/
+              Reproduction and analysis scripts
+
+          results/diagnostics/
+              Generated diagnostic outputs
+
+          notebooks/
+              Jupyter notebooks
+
+          .github/workflows/
+              Automated validation workflows
+          ```
+
+          The repository root also contains CAMB/Fortran source and supporting build infrastructure used in the cosmological implementation.
+
+          Upstream scientific software should be distinguished from model-specific modifications, tests, documentation, and results.
+
+          ---
+
+          **[Open the formatted Reviewer Roadmap PDF](Reviewer_Roadmap.pdf?raw=1)**
+
+          [Back to main repository](../../README.md)
+          EOF
+
+          cat > docs/reviewer/Technical_Synopsis.md <<'EOF'
+          # Technical Synopsis
+
+          This is the browser-readable technical entry point for Locked Saturation Cosmology.
+
+          ## Saturation response
+
+          The model uses a saturation variable `C` with
+
+          ```text
+          μ(C) = 1 - C
+          ```
+
+          and
+
+          ```text
+          0 ≤ C < 1
+          ```
+
+          ## Stable residual potential
+
+          The current local representation is
+
+          ```text
+          V(C) = V∞ + 1/2 m²(C - C*)²
+          ```
+
+          subject to
+
+          ```text
+          C* < 1
+          m² > 0
+          ```
+
+          The condition `m² > 0` describes positive local curvature of the bare potential. Full perturbative stability remains a separate question for independent analysis.
+
+          ## Cosmological freeze-out implementation
+
+          After freeze-out:
+
+          ```text
+          H² = (8π G_eff / 3) (ρ_m + ρ_r + V∞)
+          ```
+
+          where
+
+          ```text
+          G_eff = G / μ*
+          μ* = 1 - C*
+          ```
+
+          ## Weak-field phenomenology
+
+          The currently used screened response is
+
+          ```text
+          μ(x) = x / sqrt(1 + x²)
+          ```
+
+          The scientific question is whether a compact gravitational-saturation framework can reproduce relevant behavior across gravitational regimes without requiring a separately adjustable mechanism for each scale.
+
+          Growth, sound-horizon behavior, the complete perturbation spectrum, lensing, and independent statistical comparison remain appropriate areas for further testing.
+
+          ---
+
+          **[Open the formatted Technical Synopsis PDF](Technical_Synopsis.pdf?raw=1)**
+
+          [Back to main repository](../../README.md)
+          EOF
+
+          cat > docs/reviewer/Reproduction_Guide.md <<'EOF'
+          # Reproduction Guide
+
+          This page provides a browser-readable starting point for reproducing the computational work.
+
+          ## Minimum independent reproduction
+
+          A reviewer should determine:
+
+          1. whether the locked arithmetic tests reproduce;
+          2. whether the model tests reproduce;
+          3. whether the code implements the documented equations;
+          4. whether reported galaxy-scale outputs can be regenerated;
+          5. whether cosmological calculations can be regenerated;
+          6. whether the Fortran/CAMB implementation compiles and behaves as documented;
+          7. whether reported results survive reasonable robustness tests; and
+          8. whether an independently written implementation produces compatible results.
+
+          ## Core implementation
+
+          ```text
+          src/locked_saturation/
+          ```
+
+          ## Primary Locked Saturation tests
+
+          ```text
+          test_model.py
+          test_locked_arithmetic.py
+          ```
+
+          ## Important principle
+
+          Independent evaluation should rely on checked-in source, documented inputs, scripts, tests, and regenerated outputs rather than screenshots or reported numerical values alone.
+
+          A failure to reproduce a calculation should be recorded as a result.
+
+          ---
+
+          **[Open the formatted Reproduction Guide PDF](Reproduction_Guide.pdf?raw=1)**
+
+          [Back to main repository](../../README.md)
+          EOF
+
+          cat > docs/reviewer/QA_Audit.md <<'EOF'
+          # QA Audit
+
+          This is the browser-readable entry point for quality assurance and validation material.
+
+          ## What QA can establish
+
+          Repository QA can check whether:
+
+          - required files are present;
+          - source code parses and builds;
+          - specified tests run successfully;
+          - numerical calculations are internally reproducible;
+          - generated outputs correspond to the checked-in implementation;
+          - build and test workflows remain functional.
+
+          ## What QA cannot establish by itself
+
+          Successful internal validation does not establish that the physical interpretation is unique or correct.
+
+          Independent scientific evaluation still requires observational comparison, statistical model comparison, theoretical consistency checks, independent numerical implementations, and attempts at falsification.
+
+          ## Active validation structure
+
+          The repository identifies three principal workflow roles:
+
+          ```text
+          python-tests.yml
+              Routine Python validation
+
+          full-fortran-build.yml
+              Deeper Fortran/CAMB build validation
+
+          authoritative-repository-cleanup-v7.yml
+              Manual maintenance and deep-validation workflow
+          ```
+
+          Repository-maintenance workflows should not be mistaken for components of the physical theory.
+
+          ---
+
+          **[Open the formatted QA Audit PDF](QA_Audit.pdf?raw=1)**
+
+          [Back to main repository](../../README.md)
+          EOF
+
+          cat > docs/reviewer/Manuscript_Access.md <<'EOF'
+          # Current Manuscript — Review Copy
+
+          The complete long-form manuscript is retained as a PDF because of its size and formatting.
+
+          ## Open the manuscript
+
+          **[Open Current Manuscript PDF](../reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf?raw=1)**
+
+          The surrounding reviewer documents are available directly as normal GitHub pages so that reviewers do not have to depend on GitHub's PDF renderer for navigation through the project.
+
+          ## Reviewer material
+
+          - [Executive Summary](Executive_Summary.md)
+          - [Independent Reviewer Guide](Independent_Reviewer_Guide.md)
+          - [Reviewer Roadmap](Reviewer_Roadmap.md)
+          - [Technical Synopsis](Technical_Synopsis.md)
+          - [Reproduction Guide](Reproduction_Guide.md)
+          - [QA Audit](QA_Audit.md)
+
+          [Back to main repository](../../README.md)
+          EOF
+
+      - name: Update README reviewer links
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          path = Path("README.md")
+          text = path.read_text(encoding="utf-8")
+
+          replacement = """## Start Here
+
+          The main reviewer links below open as normal GitHub pages and do **not** depend on GitHub's PDF renderer.
+
+          Each reviewer page also contains a link to its formatted PDF version.
+
+          If you are encountering this project for the first time, the recommended reading order is:
+
+          1. **[Executive Summary](docs/reviewer/Executive_Summary.md)**  
+             Short overview of the hypothesis, implementation, and current results.
+
+          2. **[Independent Reviewer Guide](docs/reviewer/Independent_Reviewer_Guide.md)**  
+             What should be checked and how to approach an independent evaluation.
+
+          3. **[Reviewer Roadmap](docs/reviewer/Reviewer_Roadmap.md)**  
+             Navigation through the repository and validation material.
+
+          4. **[Technical Synopsis](docs/reviewer/Technical_Synopsis.md)**  
+             Compact technical description of the current model.
+
+          5. **[Reproduction Guide](docs/reviewer/Reproduction_Guide.md)**  
+             Instructions for independently reproducing the computational checks.
+
+          6. **[QA Audit](docs/reviewer/QA_Audit.md)**  
+             Quality-assurance and validation material.
+
+          7. **[Current Manuscript — Review Copy](docs/reviewer/Manuscript_Access.md)**  
+             Browser-safe access page for the complete long-form manuscript PDF.
+
+          """
+
+          pattern = r"## Start Here.*?(?=\n---\n)"
+          updated, count = re.subn(
+              pattern,
+              replacement.rstrip(),
+              text,
+              count=1,
+              flags=re.DOTALL
+          )
+
+          if count != 1:
+              raise RuntimeError(
+                  "Could not safely locate exactly one Start Here section in README.md"
+              )
+
+          # Replace any remaining direct Reproduction Guide PDF link
+          # elsewhere in the README with the browser-readable page.
+          updated = re.sub(
+              r"\*\*\[Reproduction Guide(?: — Open PDF Directly)?\]"
+              r"\([^)]*Reproduction_Guide\.pdf(?:\?raw=1)?\)\*\*",
+              "**[Reproduction Guide](docs/reviewer/Reproduction_Guide.md)**",
+              updated
+          )
+
+          path.write_text(updated, encoding="utf-8")
+
+      - name: Verify generated files and README links
+        shell: bash
+        run: |
+          set -e
+
+          test -f docs/reviewer/Executive_Summary.md
+          test -f docs/reviewer/Independent_Reviewer_Guide.md
+          test -f docs/reviewer/Reviewer_Roadmap.md
+          test -f docs/reviewer/Technical_Synopsis.md
+          test -f docs/reviewer/Reproduction_Guide.md
+          test -f docs/reviewer/QA_Audit.md
+          test -f docs/reviewer/Manuscript_Access.md
+
+          grep -Fq "docs/reviewer/Executive_Summary.md" README.md
+          grep -Fq "docs/reviewer/Independent_Reviewer_Guide.md" README.md
+          grep -Fq "docs/reviewer/Reviewer_Roadmap.md" README.md
+          grep -Fq "docs/reviewer/Technical_Synopsis.md" README.md
+          grep -Fq "docs/reviewer/Reproduction_Guide.md" README.md
+          grep -Fq "docs/reviewer/QA_Audit.md" README.md
+          grep -Fq "docs/reviewer/Manuscript_Access.md" README.md
+
+          echo "Reviewer pages and README links verified."
+
+      - name: Commit and push changes
+        shell: bash
+        run: |
+          set -e
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add README.md docs/reviewer/*.md
+
+          if git diff --cached --quiet; then
+            echo "No changes needed."
+            exit 0
+          fi
+
+          git commit -m "fix: add browser-readable reviewer pages"
+          git push origin HEAD:main
