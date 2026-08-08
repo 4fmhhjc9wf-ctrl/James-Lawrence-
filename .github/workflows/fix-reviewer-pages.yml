@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Create browser-readable reviewer pages
         shell: bash
@@ -406,6 +408,7 @@ jobs:
           """
 
           pattern = r"## Start Here.*?(?=\n---\n)"
+
           updated, count = re.subn(
               pattern,
               replacement.rstrip(),
@@ -419,11 +422,9 @@ jobs:
                   "Could not safely locate exactly one Start Here section in README.md"
               )
 
-          # Replace any remaining direct Reproduction Guide PDF link
-          # elsewhere in the README with the browser-readable page.
           updated = re.sub(
-              r"\*\*\[Reproduction Guide(?: — Open PDF Directly)?\]"
-              r"\([^)]*Reproduction_Guide\.pdf(?:\?raw=1)?\)\*\*",
+              r"\*\*$begin:math:display$Reproduction Guide\(\?\: — Open PDF Directly\)\?$end:math:display$"
+              r"$begin:math:text$\[\^\)\]\*Reproduction\_Guide\\\.pdf\(\?\:\\\?raw\=1\)\?$end:math:text$\*\*",
               "**[Reproduction Guide](docs/reviewer/Reproduction_Guide.md)**",
               updated
           )
@@ -469,4 +470,12 @@ jobs:
           fi
 
           git commit -m "fix: add browser-readable reviewer pages"
+
+          echo "Fetching latest main before push..."
+          git fetch origin main
+
+          echo "Rebasing generated commit onto latest main..."
+          git rebase origin/main
+
+          echo "Pushing reviewer-page fix..."
           git push origin HEAD:main
