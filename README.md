@@ -15,29 +15,32 @@ The calculations and validation contained here demonstrate what the present impl
 
 ## Start Here
 
+The main reviewer links below open as normal GitHub pages and do **not** depend on GitHub's PDF renderer.
+
+Each reviewer page also contains a link to its formatted PDF version.
+
 If you are encountering this project for the first time, the recommended reading order is:
 
-1. **[Executive Summary](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Executive_Summary.pdf?raw=1)**  
+1. **[Executive Summary](docs/reviewer/Executive_Summary.md)**  
    Short overview of the hypothesis, implementation, and current results.
 
-2. **[Independent Reviewer Guide](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Independent_Reviewer_Guide.pdf?raw=1)**  
+2. **[Independent Reviewer Guide](docs/reviewer/Independent_Reviewer_Guide.md)**  
    What should be checked and how to approach an independent evaluation.
 
-3. **[Reviewer Roadmap](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reviewer_Roadmap.pdf?raw=1)**  
+3. **[Reviewer Roadmap](docs/reviewer/Reviewer_Roadmap.md)**  
    Navigation through the repository and validation material.
 
-4. **[Technical Synopsis](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Technical_Synopsis.pdf?raw=1)**  
+4. **[Technical Synopsis](docs/reviewer/Technical_Synopsis.md)**  
    Compact technical description of the current model.
 
-5. **[Reproduction Guide](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reproduction_Guide.pdf?raw=1)**  
+5. **[Reproduction Guide](docs/reviewer/Reproduction_Guide.md)**  
    Instructions for independently reproducing the computational checks.
 
-6. **[QA Audit](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/QA_Audit.pdf?raw=1)**  
+6. **[QA Audit](docs/reviewer/QA_Audit.md)**  
    Quality-assurance and validation material.
 
-7. **[Current Manuscript — Review Copy](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf?raw=1)**  
-   Long-form presentation of the model and its interpretation.
-
+7. **[Current Manuscript — Review Copy](docs/reviewer/Manuscript_Access.md)**  
+   Browser-safe access page for the complete long-form manuscript PDF.
 ---
 
 ## What Is Being Tested?
@@ -219,7 +222,7 @@ It was retained because it provides a known maintenance path that can isolate th
 
 A reviewer should begin with the:
 
-**[Reproduction Guide](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reproduction_Guide.pdf?raw=1)**
+**[Reproduction Guide](docs/reviewer/Reproduction_Guide.md)**
 
 and then work from the checked-in implementation, scripts, tests, and documented inputs.
 
