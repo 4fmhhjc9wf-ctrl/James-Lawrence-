@@ -64,9 +64,7 @@ Growth, sound-horizon behavior, the complete perturbation spectrum, lensing, and
 
 ## Document options
 
-**[Open formatted Technical Synopsis PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Technical_Synopsis.pdf?raw=1)**
-
-**[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Technical_Synopsis.pdf)**
+**[Open formatted Technical Synopsis PDF](https://cdn.jsdelivr.net/gh/4fmhhjc9wf-ctrl/James-Lawrence-@main/docs/reviewer/Technical_Synopsis.pdf)**
 
 The page you are currently reading is the recommended mobile-friendly version.
 

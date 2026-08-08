@@ -38,9 +38,7 @@ A failure to reproduce a calculation should be recorded as a result.
 
 ## Document options
 
-**[Open formatted Reproduction Guide PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reproduction_Guide.pdf?raw=1)**
-
-**[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Reproduction_Guide.pdf)**
+**[Open formatted Reproduction Guide PDF](https://cdn.jsdelivr.net/gh/4fmhhjc9wf-ctrl/James-Lawrence-@main/docs/reviewer/Reproduction_Guide.pdf)**
 
 The page you are currently reading is the recommended mobile-friendly version.
 

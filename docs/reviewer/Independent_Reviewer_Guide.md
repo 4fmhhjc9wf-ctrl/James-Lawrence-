@@ -35,9 +35,7 @@ A failed reproduction is scientifically useful and should be documented rather t
 
 ## Document options
 
-**[Open formatted Independent Reviewer Guide PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Independent_Reviewer_Guide.pdf?raw=1)**
-
-**[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Independent_Reviewer_Guide.pdf)**
+**[Open formatted Independent Reviewer Guide PDF](https://cdn.jsdelivr.net/gh/4fmhhjc9wf-ctrl/James-Lawrence-@main/docs/reviewer/Independent_Reviewer_Guide.pdf)**
 
 The page you are currently reading is the recommended mobile-friendly version.
 

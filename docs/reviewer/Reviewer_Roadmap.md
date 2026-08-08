@@ -47,9 +47,7 @@ Upstream scientific software should be distinguished from model-specific modific
 
 ## Document options
 
-**[Open formatted Reviewer Roadmap PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reviewer_Roadmap.pdf?raw=1)**
-
-**[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Reviewer_Roadmap.pdf)**
+**[Open formatted Reviewer Roadmap PDF](https://cdn.jsdelivr.net/gh/4fmhhjc9wf-ctrl/James-Lawrence-@main/docs/reviewer/Reviewer_Roadmap.pdf)**
 
 The page you are currently reading is the recommended mobile-friendly version.
 
