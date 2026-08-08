@@ -15,9 +15,12 @@ The calculations and validation contained here demonstrate what the present impl
 
 ## Start Here
 
-The main reviewer links below open as normal GitHub pages and do **not** depend on GitHub's PDF renderer.
+The reviewer material is available in two forms:
 
-Each reviewer page also contains a link to its formatted PDF version.
+- **Browser-readable pages** for reliable viewing on desktop and mobile.
+- **Formatted PDF copies** available from each reviewer page.
+
+The browser-readable pages are the recommended starting point because they do not depend on GitHub's PDF renderer.
 
 If you are encountering this project for the first time, the recommended reading order is:
 
@@ -40,7 +43,7 @@ If you are encountering this project for the first time, the recommended reading
    Quality-assurance and validation material.
 
 7. **[Current Manuscript — Review Copy](docs/reviewer/Manuscript_Access.md)**  
-   Browser-safe access page for the complete long-form manuscript PDF.
+   Mobile-friendly access page for the complete long-form manuscript PDF.
 ---
 
 ## What Is Being Tested?

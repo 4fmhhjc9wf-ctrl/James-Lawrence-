@@ -2,7 +2,7 @@
 
 **Locked Saturation Cosmology / Gravitational Saturation**
 
-This is the browser-readable entry point for the Executive Summary.
+This is the browser-readable version of the Executive Summary and is intended to work well on desktop and mobile devices.
 
 Locked Saturation Cosmology is a computationally implemented phenomenological gravitational model being investigated as a possible common description of galaxy-scale mass discrepancies and late-time cosmological acceleration.
 
@@ -60,6 +60,12 @@ Independent reproduction, observational comparison, statistical model comparison
 
 ---
 
-**[Open the formatted Executive Summary PDF](Executive_Summary.pdf?raw=1)**
+## Document options
+
+**[Open formatted Executive Summary PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Executive_Summary.pdf?raw=1)**
+
+**[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Executive_Summary.pdf)**
+
+The page you are currently reading is the recommended mobile-friendly version.
 
 [Back to main repository](../../README.md)

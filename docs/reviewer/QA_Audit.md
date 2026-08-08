@@ -38,6 +38,12 @@ Repository-maintenance workflows should not be mistaken for components of the ph
 
 ---
 
-**[Open the formatted QA Audit PDF](QA_Audit.pdf?raw=1)**
+## Document options
+
+**[Open formatted QA Audit PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/QA_Audit.pdf?raw=1)**
+
+**[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/QA_Audit.pdf)**
+
+The page you are currently reading is the recommended mobile-friendly version.
 
 [Back to main repository](../../README.md)

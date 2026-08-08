@@ -1,12 +1,16 @@
 # Current Manuscript — Review Copy
 
-The complete long-form manuscript is retained as a PDF because of its size and formatting.
+The complete long-form manuscript is retained as a PDF because of its size, equations, figures, and formatting.
 
-## Open the manuscript
+This page provides a mobile-friendly landing page so a reviewer does not hit a dead end if GitHub's PDF renderer fails.
 
-**[Open Current Manuscript PDF](../reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf?raw=1)**
+## Manuscript options
 
-The surrounding reviewer documents are available directly as normal GitHub pages so that reviewers do not have to depend on GitHub's PDF renderer for navigation through the project.
+**[Open the formatted manuscript PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf?raw=1)**
+
+**[Direct manuscript PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reports/Locked_Saturation_Cosmology_v1.1_Review_Copy.pdf)**
+
+Depending on the browser and device, the direct file link may open the PDF in the system viewer or offer it as a file.
 
 ## Reviewer material
 

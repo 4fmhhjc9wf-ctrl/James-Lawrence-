@@ -1,6 +1,6 @@
 # Independent Reviewer Guide
 
-This page provides a browser-readable starting point for independent evaluation of Locked Saturation Cosmology.
+This browser-readable page provides a starting point for independent evaluation of Locked Saturation Cosmology.
 
 ## What a reviewer should check
 
@@ -33,6 +33,12 @@ A failed reproduction is scientifically useful and should be documented rather t
 
 ---
 
-**[Open the formatted Independent Reviewer Guide PDF](Independent_Reviewer_Guide.pdf?raw=1)**
+## Document options
+
+**[Open formatted Independent Reviewer Guide PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Independent_Reviewer_Guide.pdf?raw=1)**
+
+**[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Independent_Reviewer_Guide.pdf)**
+
+The page you are currently reading is the recommended mobile-friendly version.
 
 [Back to main repository](../../README.md)

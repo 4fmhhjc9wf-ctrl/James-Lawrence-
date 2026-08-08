@@ -2,7 +2,7 @@
 
 This page provides browser-readable navigation through the review package.
 
-## Recommended order
+## Recommended reading order
 
 1. [Executive Summary](Executive_Summary.md)
 2. [Independent Reviewer Guide](Independent_Reviewer_Guide.md)
@@ -45,6 +45,12 @@ Upstream scientific software should be distinguished from model-specific modific
 
 ---
 
-**[Open the formatted Reviewer Roadmap PDF](Reviewer_Roadmap.pdf?raw=1)**
+## Document options
+
+**[Open formatted Reviewer Roadmap PDF](https://github.com/4fmhhjc9wf-ctrl/James-Lawrence-/blob/main/docs/reviewer/Reviewer_Roadmap.pdf?raw=1)**
+
+**[Direct PDF file](https://raw.githubusercontent.com/4fmhhjc9wf-ctrl/James-Lawrence-/main/docs/reviewer/Reviewer_Roadmap.pdf)**
+
+The page you are currently reading is the recommended mobile-friendly version.
 
 [Back to main repository](../../README.md)
