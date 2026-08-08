@@ -1,0 +1,135 @@
+name: Archive Legacy Leftovers
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  archive-legacy-files:
+    name: Archive legacy and stray files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Archive legacy files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ARCHIVE="archive/legacy-files"
+          mkdir -p "$ARCHIVE"
+
+          move_if_present () {
+            src="$1"
+            dst="$2"
+
+            if [ -f "$src" ]; then
+              echo "Moving: $src -> $dst"
+
+              if [ -e "$dst" ]; then
+                echo "ERROR: destination already exists: $dst"
+                exit 1
+              fi
+
+              mkdir -p "$(dirname "$dst")"
+              mv "$src" "$dst"
+            else
+              echo "Already absent or previously archived: $src"
+            fi
+          }
+
+          move_if_present \
+            "README-2.rst" \
+            "$ARCHIVE/README-2.rst"
+
+          move_if_present \
+            "requirements-2.txt" \
+            "$ARCHIVE/requirements-2.txt"
+
+          move_if_present \
+            "__init__-2.py" \
+            "$ARCHIVE/__init__-2.py"
+
+          move_if_present \
+            "__init__-3.py" \
+            "$ARCHIVE/__init__-3.py"
+
+          move_if_present \
+            "__init__-4.py" \
+            "$ARCHIVE/__init__-4.py"
+
+          move_if_present \
+            "name: AUTHORITATIVE Repository Cleanup - v7" \
+            "$ARCHIVE/name-AUTHORITATIVE-Repository-Cleanup-v7"
+
+          move_if_present \
+            ".github/PULL_REQUEST_TEMPLATE/update-node-version.md" \
+            "$ARCHIVE/update-node-version.md"
+
+      - name: Verify active files remain
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f README.md
+          test -f README.rst
+          test -f requirements.txt
+          test -f .github/workflows/authoritative-repository-cleanup-v7.yml
+
+          echo "Active repository files remain in place."
+
+      - name: Verify legacy files are archived
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f archive/legacy-files/README-2.rst
+          test -f archive/legacy-files/requirements-2.txt
+          test -f archive/legacy-files/__init__-2.py
+          test -f archive/legacy-files/__init__-3.py
+          test -f archive/legacy-files/__init__-4.py
+          test -f archive/legacy-files/name-AUTHORITATIVE-Repository-Cleanup-v7
+          test -f archive/legacy-files/update-node-version.md
+
+          test ! -e README-2.rst
+          test ! -e requirements-2.txt
+          test ! -e __init__-2.py
+          test ! -e __init__-3.py
+          test ! -e __init__-4.py
+          test ! -e "name: AUTHORITATIVE Repository Cleanup - v7"
+          test ! -e .github/PULL_REQUEST_TEMPLATE/update-node-version.md
+
+          echo "Legacy-file archive verification PASS."
+
+      - name: Commit and push cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No legacy-file changes were needed."
+            exit 0
+          fi
+
+          git commit -m "chore: archive legacy and stray repository files"
+
+          echo "Fetching latest main..."
+          git fetch origin main
+
+          echo "Rebasing cleanup commit onto latest main..."
+          git rebase origin/main
+
+          echo "Pushing cleanup..."
+          git push origin HEAD:main
